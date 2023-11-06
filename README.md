@@ -1,4 +1,4 @@
-# Colva
+# Cosva
 Desarrollo de un software que gestione los procesos de producción lechera y
 reproductiva del ganado bovino para la finca la Campiña
 
@@ -15,7 +15,7 @@ reproductiva del ganado bovino para la finca la Campiña
 ## Uso
 
 Este proyecto se basa en realizar la documentación detallada del 
-proyecto colva para la UMB, acá puedes encontrar toda la información
+proyecto Cosva para la UMB, acá puedes encontrar toda la información
 relacionada con las tecnologías, diagramas y documentación
 que se ha realizado dentro de l proyecto.
 

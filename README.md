@@ -1,29 +1,25 @@
-# Cosva
-Desarrollo de un software que gestione los procesos de producción lechera y
-reproductiva del ganado bovino para la finca la Campiña
+## AWS Amplify React+Vite Starter Template
 
-## Requisitos
+This repository provides a starter template for creating applications using React+Vite and AWS Amplify, emphasizing easy setup for authentication, API, and database capabilities.
 
-- [Docsify](https://docsify.js.org/#/quickstart)
+## Overview
 
-## Instalación
+This template equips you with a foundational React application integrated with AWS Amplify, streamlined for scalability and performance. It is ideal for developers looking to jumpstart their project with pre-configured AWS services like Cognito, AppSync, and DynamoDB.
 
-1. Paso 1: Clona este repositorio.
-2. Paso 2: Ejecuta `npm i docsify-cli -g` para instalar las dependencias.
-3. Paso 3: Ejecuta `docsify serve docs` para iniciar el proyecto.
+## Features
 
-## Uso
+- **Authentication**: Setup with Amazon Cognito for secure user authentication.
+- **API**: Ready-to-use GraphQL endpoint with AWS AppSync.
+- **Database**: Real-time database powered by Amazon DynamoDB.
 
-Este proyecto se basa en realizar la documentación detallada del 
-proyecto Cosva para la UMB, acá puedes encontrar toda la información
-relacionada con las tecnologías, diagramas y documentación
-que se ha realizado dentro de l proyecto.
+## Deploying to AWS
 
-## Contribución
+For detailed instructions on deploying your application, refer to the [deployment section](https://docs.amplify.aws/react/start/quickstart/#deploy-a-fullstack-app-to-aws) of our documentation.
 
-Si deseas contribuir a este proyecto, por favor sigue estos pasos:
+## Security
 
-1. Fork el repositorio.
-2. Crea una nueva rama para tu contribución.
-3. Realiza tus cambios y realiza un commit.
-4. Envía un Pull Request con una descripción detallada de tus cambios.
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.

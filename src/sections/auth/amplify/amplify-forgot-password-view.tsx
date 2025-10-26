@@ -1,9 +1,11 @@
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 // @mui
 import LoadingButton from '@mui/lab/LoadingButton';
 import Link from '@mui/material/Link';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 // routes
@@ -27,6 +29,8 @@ export default function AmplifyForgotPasswordView() {
 
   const router = useRouter();
 
+  const [errorMsg, setErrorMsg] = useState('');
+
   const ForgotPasswordSchema = Yup.object().shape({
     email: Yup.string().required(t('email_required')).email(t('email_invalid')),
   });
@@ -47,21 +51,43 @@ export default function AmplifyForgotPasswordView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await forgotPassword?.(data.email);
+      const result = await forgotPassword?.(data.email);
 
-      const searchParams = new URLSearchParams({
-        email: data.email,
-      }).toString();
+      if (result?.success) {
+        const searchParams = new URLSearchParams({
+          email: data.email,
+        }).toString();
 
-      const href = `${paths.auth.amplify.newPassword}?${searchParams}`;
-      router.push(href);
+        const href = `${paths.auth.amplify.newPassword}?${searchParams}`;
+        router.push(href);
+      } else {
+        // Handle specific error types
+        let errorMessage = '';
+        switch (result?.error) {
+          case 'USER_NOT_FOUND':
+            errorMessage = t('user_not_found');
+            break;
+          case 'INVALID_EMAIL':
+            errorMessage = t('invalid_email');
+            break;
+          case 'TOO_MANY_ATTEMPTS':
+            errorMessage = t('too_many_attempts');
+            break;
+          default:
+            errorMessage = result?.error || t('forgot_password_failed');
+        }
+        setErrorMsg(errorMessage);
+      }
     } catch (error) {
       console.error(error);
+      setErrorMsg(t('forgot_password_failed'));
     }
   });
 
   const renderForm = (
     <Stack spacing={3} alignItems="center">
+      {!!errorMsg && <Alert severity="error">{errorMsg}</Alert>}
+      
       <RHFTextField name="email" label={t("email_label")}/>
 
       <LoadingButton

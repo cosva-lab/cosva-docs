@@ -8,4 +8,19 @@ export const auth = defineAuth({
   loginWith: {
     email: true,
   },
+  userAttributes: {
+    email: {
+      required: true,
+    },
+  },
+  // Account recovery settings
+  accountRecovery: 'EMAIL_ONLY',
+  // Email configuration using correct syntax
+  senders: {
+    email: {
+      fromEmail: 'noreply@cosva.app', // Email verificado
+      fromName: 'Cosva',
+      replyTo: 'support@cosva.app',
+    },
+  },
 });

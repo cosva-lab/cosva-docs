@@ -64,9 +64,35 @@ export default function AmplifyLoginView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await login?.(data.email, data.password);
+      const result = await login?.(data.email, data.password);
 
-      router.push(returnTo || PATH_AFTER_LOGIN);
+      if (result?.success) {
+        router.push(returnTo || PATH_AFTER_LOGIN);
+      } else if (result?.challenge === 'NEW_PASSWORD_REQUIRED') {
+        // Redirect to new password page with email and session
+        router.push(`${paths.auth.amplify.newPassword}?email=${encodeURIComponent(data.email)}&session=${encodeURIComponent(result.session || '')}`);
+      } else {
+        reset();
+        // Handle specific error types
+        let errorMessage = '';
+        switch (result?.error) {
+          case 'USER_NOT_FOUND':
+            errorMessage = t('user_not_found');
+            break;
+          case 'INVALID_CREDENTIALS':
+            errorMessage = t('invalid_credentials');
+            break;
+          case 'USER_NOT_CONFIRMED':
+            errorMessage = t('user_not_confirmed');
+            break;
+          case 'TOO_MANY_ATTEMPTS':
+            errorMessage = t('too_many_attempts');
+            break;
+          default:
+            errorMessage = result?.error || t('login_failed');
+        }
+        setErrorMsg(errorMessage);
+      }
     } catch (error) {
       reset();
       setErrorMsg(typeof error === 'string' ? error : t(error.code));

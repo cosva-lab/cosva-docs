@@ -1,8 +1,6 @@
-import { LogoutOptions, RedirectLoginOptions, PopupLoginOptions } from '@auth0/auth0-react';
-
 // ----------------------------------------------------------------------
 
-export type ActionMapType<M extends { [index: string]: any }> = {
+export type ActionMapType<M extends { [index: string]: unknown }> = {
   [Key in keyof M]: M[Key] extends undefined
     ? {
         type: Key;
@@ -13,7 +11,7 @@ export type ActionMapType<M extends { [index: string]: any }> = {
       };
 };
 
-export type AuthUserType = null | Record<string, any>;
+export type AuthUserType = null | Record<string, unknown>;
 
 export type AuthStateType = {
   status?: string;
@@ -24,25 +22,44 @@ export type AuthStateType = {
 // ----------------------------------------------------------------------
 
 type CanRemove = {
-  login?: (email: string, password: string) => Promise<void>;
+  login?: (email: string, password: string) => Promise<LoginResult>;
   register?: (
     email: string,
     password: string,
     firstName: string,
     lastName: string
-  ) => Promise<void>;
+  ) => Promise<{ success: boolean }>;
   //
   loginWithGoogle?: () => Promise<void>;
   loginWithGithub?: () => Promise<void>;
   loginWithTwitter?: () => Promise<void>;
-  //
-  loginWithPopup?: (options?: PopupLoginOptions) => Promise<void>;
-  loginWithRedirect?: (options?: RedirectLoginOptions) => Promise<void>;
-  //
   confirmRegister?: (email: string, code: string) => Promise<void>;
-  forgotPassword?: (email: string) => Promise<void>;
+  forgotPassword?: (email: string) => Promise<ForgotPasswordResult>;
   resendCodeRegister?: (email: string) => Promise<void>;
-  newPassword?: (email: string, code: string, password: string) => Promise<void>;
+  newPassword?: (
+    email: string,
+    code: string,
+    password: string
+  ) => Promise<NewPasswordResult>;
+  confirmNewPassword?: (email: string, newPassword: string) => Promise<LoginResult>;
+};
+
+export type LoginResult = {
+  success: boolean;
+  challenge?: 'NEW_PASSWORD_REQUIRED';
+  email?: string;
+  session?: string;
+  error?: 'USER_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'USER_NOT_CONFIRMED' | 'TOO_MANY_ATTEMPTS' | string;
+};
+
+export type ForgotPasswordResult = {
+  success: boolean;
+  error?: 'USER_NOT_FOUND' | 'INVALID_EMAIL' | 'TOO_MANY_ATTEMPTS' | string;
+};
+
+export type NewPasswordResult = {
+  success: boolean;
+  error?: 'INVALID_CODE' | 'CODE_EXPIRED' | 'INVALID_PASSWORD' | string;
 };
 
 export type JWTContextType = CanRemove & {
@@ -52,7 +69,12 @@ export type JWTContextType = CanRemove & {
   authenticated: boolean;
   unauthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -66,9 +88,14 @@ export type FirebaseContextType = CanRemove & {
   loginWithGoogle: () => Promise<void>;
   loginWithGithub: () => Promise<void>;
   loginWithTwitter: () => Promise<void>;
-  forgotPassword?: (email: string) => Promise<void>;
+  forgotPassword?: (email: string) => Promise<ForgotPasswordResult>;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<void>;
 };
 
 export type AmplifyContextType = CanRemove & {
@@ -77,29 +104,17 @@ export type AmplifyContextType = CanRemove & {
   loading: boolean;
   authenticated: boolean;
   unauthenticated: boolean;
-  login: (email: string, password: string) => Promise<unknown>;
+  login: (email: string, password: string) => Promise<LoginResult>;
   register: (
     email: string,
     password: string,
     firstName: string,
     lastName: string
-  ) => Promise<unknown>;
+  ) => Promise<{ success: boolean }>;
   logout: () => Promise<unknown>;
   confirmRegister: (email: string, code: string) => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<ForgotPasswordResult>;
   resendCodeRegister: (email: string) => Promise<void>;
-  newPassword: (email: string, code: string, password: string) => Promise<void>;
-};
-
-// ----------------------------------------------------------------------
-
-export type Auth0ContextType = CanRemove & {
-  user: AuthUserType;
-  method: string;
-  loading: boolean;
-  authenticated: boolean;
-  unauthenticated: boolean;
-  loginWithPopup: (options?: PopupLoginOptions) => Promise<void>;
-  loginWithRedirect: (options?: RedirectLoginOptions) => Promise<void>;
-  logout: (options?: LogoutOptions) => Promise<void>;
+  newPassword: (email: string, code: string, password: string) => Promise<NewPasswordResult>;
+  confirmNewPassword: (email: string, newPassword: string) => Promise<LoginResult>;
 };

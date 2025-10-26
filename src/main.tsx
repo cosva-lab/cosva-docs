@@ -1,14 +1,25 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
-import "./index.css";
-import { Amplify } from "aws-amplify";
-import outputs from "../amplify_outputs.json";
+import { Suspense } from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router';
+import { HelmetProvider } from 'react-helmet-async';
+//
+import App from './App';
+import reportWebVitals from 'reportWebVitals';
 
-Amplify.configure(outputs);
+// ----------------------------------------------------------------------
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
 );
+
+root.render(
+  <HelmetProvider>
+    <BrowserRouter>
+      <Suspense>
+        <App />
+      </Suspense>
+    </BrowserRouter>
+  </HelmetProvider>
+);
+
+reportWebVitals(console.log);

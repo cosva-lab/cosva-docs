@@ -1,40 +1,91 @@
-import { useEffect, useState } from "react";
-import type { Schema } from "../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
+// i18n
+import 'locales/i18n';
 
-const client = generateClient<Schema>();
+// scrollbar
+import 'simplebar-react/dist/simplebar.min.css';
 
-function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+// lightbox
+import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/captions.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
-  useEffect(() => {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
-  }, []);
+// map
+import 'mapbox-gl/dist/mapbox-gl.css';
 
-  function createTodo() {
-    client.models.Todo.create({ content: window.prompt("Todo content") });
-  }
+// editor
+import 'react-quill/dist/quill.snow.css';
+
+// carousel
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+
+// image
+import 'react-lazy-load-image-component/src/effects/blur.css';
+
+// ----------------------------------------------------------------------
+
+// routes
+import Router from 'routes/sections';
+// theme
+import ThemeProvider from 'theme';
+// locales
+import { LocalizationProvider } from 'locales';
+// hooks
+import { useScrollToTop } from 'hooks/use-scroll-to-top';
+// components
+import ProgressBar from 'components/progress-bar';
+import { MotionLazy } from 'components/animate/motion-lazy';
+import SnackbarProvider from 'components/snackbar/snackbar-provider';
+import { SettingsProvider, SettingsDrawer } from 'components/settings';
+// auth
+// import { AuthProvider, AuthConsumer } from 'auth/context/jwt';
+// import { AuthProvider, AuthConsumer } from 'auth/context/auth0';
+import { AuthProvider, AuthConsumer } from 'auth/context/amplify';
+// import { AuthProvider, AuthConsumer } from 'auth/context/firebase';
+
+// ----------------------------------------------------------------------
+
+export default function App() {
+  const charAt = `
+
+  ░░░    ░░░
+  ▒▒▒▒  ▒▒▒▒
+  ▒▒ ▒▒▒▒ ▒▒
+  ▓▓  ▓▓  ▓▓
+  ██      ██
+
+  `;
+
+  console.info(`%c${charAt}`, 'color: #5BE49B');
+
+  useScrollToTop();
 
   return (
-    <main>
-      <h1>My todos</h1>
-      <button onClick={createTodo}>+ new</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
-        ))}
-      </ul>
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
-          Review next step of this tutorial.
-        </a>
-      </div>
-    </main>
+    <AuthProvider>
+      <LocalizationProvider>
+        <SettingsProvider
+          defaultSettings={{
+            themeMode: 'light', // 'light' | 'dark'
+            themeDirection: 'ltr', //  'rtl' | 'ltr'
+            themeContrast: 'default', // 'default' | 'bold'
+            themeLayout: 'vertical', // 'vertical' | 'horizontal' | 'mini'
+            themeColorPresets: 'default', // 'default' | 'cyan' | 'purple' | 'blue' | 'orange' | 'red'
+            themeStretch: false,
+          }}
+        >
+          <ThemeProvider>
+            <MotionLazy>
+              <SnackbarProvider>
+                <SettingsDrawer />
+                <ProgressBar />
+                <AuthConsumer>
+                  <Router />
+                </AuthConsumer>
+              </SnackbarProvider>
+            </MotionLazy>
+          </ThemeProvider>
+        </SettingsProvider>
+      </LocalizationProvider>
+    </AuthProvider>
   );
 }
-
-export default App;

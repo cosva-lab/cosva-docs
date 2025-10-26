@@ -1,0 +1,7 @@
+@import 'assets/styles/_variables.sass';
+@import 'assets/styles/__mixins.sass';
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

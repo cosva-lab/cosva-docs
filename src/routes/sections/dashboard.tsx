@@ -16,6 +16,14 @@ const BlogPostsPage = lazy(() => import('pages/dashboard/post/list'));
 const BlogPostPage = lazy(() => import('pages/dashboard/post/details'));
 const BlogNewPostPage = lazy(() => import('pages/dashboard/post/new'));
 const BlogEditPostPage = lazy(() => import('pages/dashboard/post/edit'));
+// FAQ
+const FAQListPage = lazy(() => import('pages/dashboard/faq/list'));
+const FAQCreatePage = lazy(() => import('pages/dashboard/faq/new'));
+const FAQEditPage = lazy(() => import('pages/dashboard/faq/edit'));
+// FAQ CATEGORY
+const FAQCategoryListPage = lazy(() => import('pages/dashboard/faq-category/list'));
+const FAQCategoryCreatePage = lazy(() => import('pages/dashboard/faq-category/new'));
+const FAQCategoryEditPage = lazy(() => import('pages/dashboard/faq-category/edit'));
 // BLANK PAGE
 const BlankPage = lazy(() => import('pages/dashboard/blank'));
 
@@ -43,6 +51,24 @@ export const dashboardRoutes = [
           { path: ':title', element: <BlogPostPage /> },
           { path: ':title/edit', element: <BlogEditPostPage /> },
           { path: 'new', element: <BlogNewPostPage /> },
+        ],
+      },
+      {
+        path: 'faq',
+        children: [
+          { element: <FAQListPage />, index: true },
+          { path: 'list', element: <FAQListPage /> },
+          { path: ':id/edit', element: <FAQEditPage /> },
+          { path: 'new', element: <FAQCreatePage /> },
+        ],
+      },
+      {
+        path: 'faq-category',
+        children: [
+          { element: <FAQCategoryListPage />, index: true },
+          { path: 'list', element: <FAQCategoryListPage /> },
+          { path: ':id/edit', element: <FAQCategoryEditPage /> },
+          { path: 'new', element: <FAQCategoryCreatePage /> },
         ],
       },
       { path: 'blank', element: <BlankPage /> },

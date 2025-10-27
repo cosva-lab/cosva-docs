@@ -54,7 +54,7 @@ const schema = a.schema({
     })
     .authorization(allow => [
       allow.publicApiKey().to(['read']),
-      allow.authenticated().to(['create', 'update', 'delete']),
+      allow.authenticated().to(['read', 'create', 'update', 'delete']),
     ]),
 
   // FAQ Category Translations
@@ -68,7 +68,7 @@ const schema = a.schema({
     })
     .authorization(allow => [
       allow.publicApiKey().to(['read']),
-      allow.authenticated().to(['create', 'update', 'delete']),
+      allow.authenticated().to(['read', 'create', 'update', 'delete']),
     ]),
 
   // FAQ
@@ -82,7 +82,7 @@ const schema = a.schema({
     })
     .authorization(allow => [
       allow.publicApiKey().to(['read']),
-      allow.authenticated().to(['create', 'update', 'delete']),
+      allow.authenticated().to(['read', 'create', 'update', 'delete']),
     ]),
 
   // FAQ Translations
@@ -96,7 +96,7 @@ const schema = a.schema({
     })
     .authorization(allow => [
       allow.publicApiKey().to(['read']),
-      allow.authenticated().to(['create', 'update', 'delete']),
+      allow.authenticated().to(['read', 'create', 'update', 'delete']),
     ]),
 
   // Documentation Section
@@ -110,7 +110,7 @@ const schema = a.schema({
     })
     .authorization(allow => [
       allow.publicApiKey().to(['read']),
-      allow.authenticated().to(['create', 'update', 'delete']),
+      allow.authenticated().to(['read', 'create', 'update', 'delete']),
     ]),
 
   // Documentation Section Translations
@@ -124,7 +124,7 @@ const schema = a.schema({
     })
     .authorization(allow => [
       allow.publicApiKey().to(['read']),
-      allow.authenticated().to(['create', 'update', 'delete']),
+      allow.authenticated().to(['read', 'create', 'update', 'delete']),
     ]),
 
   // Documentation Article
@@ -138,7 +138,7 @@ const schema = a.schema({
     })
     .authorization(allow => [
       allow.publicApiKey().to(['read']),
-      allow.authenticated().to(['create', 'update', 'delete']),
+      allow.authenticated().to(['read', 'create', 'update', 'delete']),
     ]),
 
   // Documentation Article Translations
@@ -152,7 +152,7 @@ const schema = a.schema({
     })
     .authorization(allow => [
       allow.publicApiKey().to(['read']),
-      allow.authenticated().to(['create', 'update', 'delete']),
+      allow.authenticated().to(['read', 'create', 'update', 'delete']),
     ]),
 
   // ======================================================
@@ -163,7 +163,7 @@ const schema = a.schema({
     .model({
       auditableId: a.string().required(),
       auditableType: a.string().required(),
-      action: a.enum(['CREATE', 'UPDATE', 'DELETE']),
+      action: a.enum(['read', 'CREATE', 'UPDATE', 'DELETE']),
       userId: a.string(),
       userName: a.string(),
       remoteAddress: a.string(),

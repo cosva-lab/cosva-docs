@@ -54,5 +54,17 @@ export const paths = {
         edit: `${ROOTS.DASHBOARD}/post/${paramCase(MOCK_TITLE)}/edit`,
       },
     },
+    faq: {
+      root: `${ROOTS.DASHBOARD}/faq`,
+      new: `${ROOTS.DASHBOARD}/faq/new`,
+      list: `${ROOTS.DASHBOARD}/faq/list`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/faq/${id}/edit`,
+    },
+    faqCategory: {
+      root: `${ROOTS.DASHBOARD}/faq-category`,
+      new: `${ROOTS.DASHBOARD}/faq-category/new`,
+      list: `${ROOTS.DASHBOARD}/faq-category/list`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/faq-category/${id}/edit`,
+    },
   },
 };

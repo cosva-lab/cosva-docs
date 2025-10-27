@@ -44,6 +44,7 @@ const ICONS = {
   ecommerce: icon('ic_ecommerce'),
   analytics: icon('ic_analytics'),
   dashboard: icon('ic_dashboard'),
+  faq: icon('ic_chat'), // Using chat icon for FAQ
 };
 
 // ----------------------------------------------------------------------
@@ -75,6 +76,24 @@ export function useNavData() {
             children: [
               { title: t('list'), path: paths.dashboard.post.root },
               { title: t('create'), path: paths.dashboard.post.new },
+            ],
+          },
+          {
+            title: 'FAQ',
+            path: paths.dashboard.faq.root,
+            icon: ICONS.faq,
+            children: [
+              { title: t('list'), path: paths.dashboard.faq.list },
+              { title: t('create'), path: paths.dashboard.faq.new },
+            ],
+          },
+          {
+            title: 'FAQ Categories',
+            path: paths.dashboard.faqCategory.root,
+            icon: ICONS.folder,
+            children: [
+              { title: t('list'), path: paths.dashboard.faqCategory.list },
+              { title: t('create'), path: paths.dashboard.faqCategory.new },
             ],
           },
         ],

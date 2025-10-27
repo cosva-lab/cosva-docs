@@ -9,7 +9,7 @@ import { useGetFAQ } from 'api/faq';
 import { useSettingsContext } from 'components/settings';
 import CustomBreadcrumbs from 'components/custom-breadcrumbs';
 //
-import FAQNewEditForm from '../faq-new-edit-form';
+import FAQFormWithTranslations from '../faq-form-with-translations';
 
 // ----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ export default function FAQEditView() {
         }}
       />
 
-      {!faqLoading && faq && <FAQNewEditForm currentFAQ={faq} />}
+      {!faqLoading && faq && <FAQFormWithTranslations currentFAQ={faq} />}
     </Container>
   );
 }

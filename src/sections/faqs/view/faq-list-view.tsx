@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useRouter } from 'routes/hooks';
 // @mui
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -31,9 +32,14 @@ const defaultFilters: IFAQFilters = {
 
 export default function FAQListView() {
   const settings = useSettingsContext();
+  const router = useRouter();
   const [filters, setFilters] = useState(defaultFilters);
   const { faqs, faqsLoading } = useGetFAQs();
   const { categories } = useGetFAQCategories();
+
+  const handleEdit = useCallback((faq: IFAQ) => {
+    router.push(paths.dashboard.faq.edit(faq.id));
+  }, [router]);
 
   const handleFilters = useCallback((name: string, value: IFAQFilterValue) => {
     setFilters((prevState) => ({
@@ -118,7 +124,7 @@ export default function FAQListView() {
         ))}
       </Tabs>
 
-      <FAQList faqs={dataFiltered} loading={faqsLoading} />
+      <FAQList faqs={dataFiltered} loading={faqsLoading} onEdit={handleEdit} />
     </Container>
   );
 }

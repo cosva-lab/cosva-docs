@@ -134,7 +134,19 @@ export function useGetFAQ(id: string) {
       if (!id) return null;
       const result = await client.models.FAQ.get(
         { id },
-        { authMode: 'apiKey' }
+        {
+          authMode: 'apiKey',
+          selectionSet: [
+            'id',
+            'categoryId',
+            'tags',
+            'status',
+            'translations.id',
+            'translations.answer',
+            'translations.question',
+            'translations.lang',
+          ],
+        }
       );
       return result.data;
     }
@@ -202,6 +214,200 @@ export async function createFAQCategory(data: {
   }
 }
 
+// ----------------------------------------------------------------------
+
+export async function createFAQ(data: {
+  categoryId: string;
+  tags: string[];
+  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+  translations: { lang: string; question: string; answer: string }[];
+}) {
+  try {
+    // Create the main FAQ with user authentication
+    const faq = await authenticatedClient.models.FAQ.create(
+      {
+        categoryId: data.categoryId,
+        tags: data.tags,
+        status: data.status,
+      },
+      { authMode: 'userPool' }
+    );
+
+    // Create translations with user authentication
+    // Ensure only ONE translation per language
+    if (faq.data?.id && faq.data !== null) {
+      const faqId = faq.data.id;
+
+      // Remove duplicates from data.translations (keep only first occurrence of each language)
+      const seenLangs = new Set<string>();
+      const uniqueTranslations = data.translations.filter(t => {
+        if (seenLangs.has(t.lang)) return false;
+        seenLangs.add(t.lang);
+        return true;
+      });
+
+      await Promise.all(
+        uniqueTranslations.map(translation =>
+          authenticatedClient.models.FAQI18n.create(
+            {
+              faqId,
+              lang: translation.lang as Schema['LanguageCode']['type'],
+              question: translation.question,
+              answer: translation.answer,
+            },
+            { authMode: 'userPool' }
+          )
+        )
+      );
+    }
+
+    return { data: faq.data, error: null };
+  } catch (error) {
+    console.error('Error creating FAQ:', error);
+    return { data: null, error };
+  }
+}
+
+// ----------------------------------------------------------------------
+
+export async function updateFAQ(
+  id: string,
+  data: {
+    categoryId: string;
+    tags: string[];
+    status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+    translations: { lang: string; question: string; answer: string }[];
+  }
+) {
+  try {
+    // Update the main FAQ (requires authenticated user)
+    const faq = await authenticatedClient.models.FAQ.update(
+      {
+        id,
+        categoryId: data.categoryId,
+        tags: data.tags,
+        status: data.status,
+      },
+      { authMode: 'userPool' }
+    );
+
+    // STEP 1 — Get existing translations
+    const { data: existingTranslations = [] } =
+      await authenticatedClient.models.FAQI18n.list({
+        filter: { faqId: { eq: id } },
+        authMode: 'userPool',
+      });
+
+    // STEP 2 — Normalize input (remove duplicates by language)
+    const seenLangs = new Set<string>();
+    const uniqueTranslations = data.translations.filter(t => {
+      if (seenLangs.has(t.lang)) return false;
+      seenLangs.add(t.lang);
+      return true;
+    });
+
+    // STEP 3 — Get languages from form data
+    const formLanguageCodes = new Set(uniqueTranslations.map(t => t.lang));
+
+    // STEP 4 — UPSERT: Update or create translations (ONLY ONE per language)
+    const upsertPromises = uniqueTranslations.map(async translation => {
+      const existing = existingTranslations.find(
+        t => t.lang === translation.lang
+      );
+
+      if (existing) {
+        // Update existing translation
+        return authenticatedClient.models.FAQI18n.update(
+          {
+            id: existing.id,
+            question: translation.question,
+            answer: translation.answer,
+          },
+          { authMode: 'userPool' }
+        );
+      } else {
+        // Create new translation
+        return authenticatedClient.models.FAQI18n.create(
+          {
+            faqId: id,
+            lang: translation.lang as Schema['LanguageCode']['type'],
+            question: translation.question,
+            answer: translation.answer,
+          },
+          { authMode: 'userPool' }
+        );
+      }
+    });
+
+    await Promise.all(upsertPromises);
+
+    // STEP 5 — DELETE: Remove translations that were deleted from the form
+    // AND delete DUPLICATE translations (keep only ONE per language)
+    const languageGroups: Record<string, typeof existingTranslations> = {};
+
+    existingTranslations.forEach(t => {
+      if (!languageGroups[t.lang]) {
+        languageGroups[t.lang] = [];
+      }
+      languageGroups[t.lang].push(t);
+    });
+
+    const deletePromises: Promise<unknown>[] = [];
+
+    // Keep track of which translations we want to keep (from form or first existing)
+    const translationsToKeep = new Set(
+      uniqueTranslations
+        .map(t => {
+          const existing = existingTranslations.find(e => e.lang === t.lang);
+          return existing ? existing.id : null;
+        })
+        .filter(Boolean) as string[]
+    );
+
+    Object.entries(languageGroups).forEach(([lang, translations]) => {
+      // Delete if language was removed from form (all translations of that language)
+      if (!formLanguageCodes.has(lang)) {
+        translations.forEach(t =>
+          deletePromises.push(
+            authenticatedClient.models.FAQI18n.delete(
+              { id: t.id },
+              { authMode: 'userPool' }
+            )
+          )
+        );
+      }
+      // Keep only ONE translation per language (the first one or the one being updated)
+      else {
+        const toKeep = translations.find(
+          t =>
+            translationsToKeep.has(t.id) ||
+            t.id === existingTranslations.find(e => e.lang === lang)?.id
+        );
+
+        // Delete all others
+        translations.forEach(t => {
+          if (t.id !== toKeep?.id) {
+            deletePromises.push(
+              authenticatedClient.models.FAQI18n.delete(
+                { id: t.id },
+                { authMode: 'userPool' }
+              )
+            );
+          }
+        });
+      }
+    });
+
+    if (deletePromises.length > 0) {
+      await Promise.all(deletePromises);
+    }
+
+    return { data: faq.data, error: null };
+  } catch (error) {
+    console.error('Error updating FAQ:', error);
+    return { data: null, error };
+  }
+}
 // ----------------------------------------------------------------------
 
 export async function updateFAQCategory(

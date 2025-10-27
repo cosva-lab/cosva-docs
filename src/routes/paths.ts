@@ -59,6 +59,7 @@ export const paths = {
       new: `${ROOTS.DASHBOARD}/faq/new`,
       list: `${ROOTS.DASHBOARD}/faq/list`,
       edit: (id: string) => `${ROOTS.DASHBOARD}/faq/${id}/edit`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/faq/${id}`,
     },
     faqCategory: {
       root: `${ROOTS.DASHBOARD}/faq-category`,

@@ -6,7 +6,7 @@ import { paths } from 'routes/paths';
 import { useSettingsContext } from 'components/settings';
 import CustomBreadcrumbs from 'components/custom-breadcrumbs';
 //
-import FAQNewEditForm from '../faq-new-edit-form';
+import FAQFormWithTranslations from '../faq-form-with-translations';
 
 // ----------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ export default function FAQCreateView() {
         }}
       />
 
-      <FAQNewEditForm />
+      <FAQFormWithTranslations />
     </Container>
   );
 }

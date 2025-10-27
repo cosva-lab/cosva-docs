@@ -2,10 +2,7 @@ import { useEffect, useReducer, useCallback, useMemo } from 'react';
 import { Amplify } from 'aws-amplify';
 import {
   signIn,
-  signUp,
   signOut,
-  confirmSignUp,
-  resendSignUpCode,
   getCurrentUser,
   fetchAuthSession,
   resetPassword,
@@ -90,10 +87,14 @@ export function AuthProvider({ children }: Props) {
   const login = useCallback(
     async (email: string, password: string) => {
       try {
+        console.log('Attempting login for:', email);
+        
         const { isSignedIn, nextStep } = await signIn({
           username: email,
           password,
         });
+
+        console.log('SignIn result:', { isSignedIn, nextStep });
 
         if (isSignedIn) {
           await initialize();
@@ -104,16 +105,31 @@ export function AuthProvider({ children }: Props) {
         if (
           nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED'
         ) {
+          console.log('NEW_PASSWORD_REQUIRED challenge detected');
           return {
             success: false,
             challenge: 'NEW_PASSWORD_REQUIRED' as const,
+            email: email,
+            session: 'internal', // Session is managed internally by Amplify
+          };
+        }
+
+        // Handle other challenges that might require additional steps
+        if (nextStep?.signInStep) {
+          console.log('Additional challenge detected:', nextStep.signInStep);
+          // For now, treat any additional challenge as requiring password verification
+          return {
+            success: false,
+            challenge: 'PASSWORD_VERIFIER' as const,
             email: email,
             session: (nextStep as { additionalInfo?: { session?: string } }).additionalInfo?.session,
           };
         }
 
-        return { success: false, error: 'Login failed' };
+        console.log('Unknown challenge:', nextStep);
+        return { success: false, error: 'Login failed - unknown challenge' };
       } catch (error: unknown) {
+        console.error('Login error:', error);
         const errorMessage = (error as Error).message || 'Login failed';
         
         // Handle specific AWS Cognito errors
@@ -128,6 +144,48 @@ export function AuthProvider({ children }: Props) {
         }
         
         return { success: false, error: errorMessage };
+      }
+    },
+    [initialize]
+  );
+
+  // CONFIRM PASSWORD VERIFIER (for SRP flow)
+  const confirmPasswordVerifier = useCallback(
+    async (email: string, password: string) => {
+      try {
+        console.log('Confirming password verifier for:', email);
+        
+        // For PASSWORD_VERIFIER challenge, we need to retry the signIn
+        // The Amplify SDK handles the SRP flow automatically
+        const { isSignedIn, nextStep } = await signIn({
+          username: email,
+          password,
+        });
+
+        console.log('Password verifier result:', { isSignedIn, nextStep });
+
+        if (isSignedIn) {
+          await initialize();
+          return { success: true };
+        }
+
+        // Check if we still have challenges
+        if (nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+          return {
+            success: false,
+            challenge: 'NEW_PASSWORD_REQUIRED' as const,
+            email: email,
+            session: 'internal', // Session is managed internally by Amplify
+          };
+        }
+
+        return { success: false, error: 'Password verification failed' };
+      } catch (error: unknown) {
+        console.error('Password verifier error:', error);
+        return {
+          success: false,
+          error: (error as Error).message || 'Password verification failed',
+        };
       }
     },
     [initialize]
@@ -163,45 +221,40 @@ export function AuthProvider({ children }: Props) {
     [initialize]
   );
 
-  // REGISTER
+  // REGISTER - DISABLED: Self-service sign-up is disabled
   const register = useCallback(
     async (
-      email: string,
-      password: string,
-      firstName: string,
-      lastName: string
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _email: string,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _password: string,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _firstName: string,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _lastName: string
     ) => {
-      try {
-        console.log('Registering user:', email);
-        const result = await signUp({
-          username: email,
-          password,
-          options: {
-            userAttributes: {
-              email,
-              given_name: firstName,
-              family_name: lastName,
-            },
-          },
-        });
-        console.log('Registration result:', result);
-        return { success: true };
-      } catch (error: unknown) {
-        console.error('Registration error:', error);
-        throw error;
-      }
+      // Self-service sign-up is disabled
+      throw new Error('Self-service sign-up is disabled. Please contact an administrator to create your account.');
     },
     []
   );
 
-  // CONFIRM REGISTER
-  const confirmRegister = useCallback(async (email: string, code: string) => {
-    await confirmSignUp({ username: email, confirmationCode: code });
+  // CONFIRM REGISTER - DISABLED: Self-service sign-up is disabled
+  const confirmRegister = useCallback(async (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _email: string, 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _code: string
+  ) => {
+    throw new Error('Self-service sign-up is disabled. Please contact an administrator to create your account.');
   }, []);
 
-  // RESEND CODE
-  const resendCodeRegister = useCallback(async (email: string) => {
-    await resendSignUpCode({ username: email });
+  // RESEND CODE - DISABLED: Self-service sign-up is disabled
+  const resendCodeRegister = useCallback(async (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _email: string
+  ) => {
+    throw new Error('Self-service sign-up is disabled. Please contact an administrator to create your account.');
   }, []);
 
   // LOGOUT
@@ -214,8 +267,18 @@ export function AuthProvider({ children }: Props) {
   const forgotPassword = useCallback(async (email: string) => {
     try {
       console.log('Sending forgot password email to:', email);
+      
       const result = await resetPassword({ username: email });
       console.log('Forgot password result:', result);
+      
+      // Check if the result contains delivery details
+      if (result.nextStep?.resetPasswordStep === 'CONFIRM_RESET_PASSWORD_WITH_CODE') {
+        console.log('Reset password code sent successfully');
+        console.log('Code delivery details:', result.nextStep.codeDeliveryDetails);
+        return { success: true };
+      }
+      
+      console.log('Reset password completed without code delivery');
       return { success: true };
     } catch (error: unknown) {
       console.error('Forgot password error:', error);
@@ -223,13 +286,20 @@ export function AuthProvider({ children }: Props) {
       
       // Handle specific AWS Cognito errors
       if (errorMessage.includes('UserNotFoundException')) {
+        console.log('User not found:', email);
         return { success: false, error: 'USER_NOT_FOUND' };
       } else if (errorMessage.includes('InvalidParameterException')) {
+        console.log('Invalid parameter:', errorMessage);
         return { success: false, error: 'INVALID_EMAIL' };
       } else if (errorMessage.includes('TooManyRequestsException')) {
+        console.log('Too many requests:', errorMessage);
+        return { success: false, error: 'TOO_MANY_ATTEMPTS' };
+      } else if (errorMessage.includes('LimitExceededException')) {
+        console.log('Limit exceeded:', errorMessage);
         return { success: false, error: 'TOO_MANY_ATTEMPTS' };
       }
       
+      console.log('Unknown error:', errorMessage);
       return { success: false, error: errorMessage };
     }
   }, []);
@@ -285,6 +355,7 @@ export function AuthProvider({ children }: Props) {
       confirmRegister,
       resendCodeRegister,
       confirmNewPassword,
+      confirmPasswordVerifier,
     }),
     [
       status,
@@ -297,6 +368,7 @@ export function AuthProvider({ children }: Props) {
       confirmRegister,
       resendCodeRegister,
       confirmNewPassword,
+      confirmPasswordVerifier,
     ]
   );
 

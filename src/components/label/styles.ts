@@ -1,43 +1,36 @@
 // @mui
-import { alpha, Theme, styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 //
 import { LabelColor, LabelVariant } from './types';
 
 // ----------------------------------------------------------------------
 
-export const StyledLabel = styled(Box)(({
-  theme,
-  ownerState,
-}: {
-  theme: Theme;
+export const StyledLabel = styled(Box, {
+  shouldForwardProp: prop => prop !== 'ownerState',
+})<{
   ownerState: {
     color: LabelColor;
     variant: LabelVariant;
   };
-}) => {
+}>(({ theme, ownerState }) => {
   const isLight = theme.palette.mode === 'light';
 
   const filledVariant = ownerState.variant === 'filled';
-
   const outlinedVariant = ownerState.variant === 'outlined';
-
   const softVariant = ownerState.variant === 'soft';
 
   const defaultStyle = {
     ...(ownerState.color === 'default' && {
-      // FILLED
       ...(filledVariant && {
         color: isLight ? theme.palette.common.white : theme.palette.grey[800],
         backgroundColor: theme.palette.text.primary,
       }),
-      // OUTLINED
       ...(outlinedVariant && {
         backgroundColor: 'transparent',
         color: theme.palette.text.primary,
         border: `2px solid ${theme.palette.text.primary}`,
       }),
-      // SOFT
       ...(softVariant && {
         color: theme.palette.text.secondary,
         backgroundColor: alpha(theme.palette.grey[500], 0.16),
@@ -47,18 +40,15 @@ export const StyledLabel = styled(Box)(({
 
   const colorStyle = {
     ...(ownerState.color !== 'default' && {
-      // FILLED
       ...(filledVariant && {
         color: theme.palette[ownerState.color].contrastText,
         backgroundColor: theme.palette[ownerState.color].main,
       }),
-      // OUTLINED
       ...(outlinedVariant && {
         backgroundColor: 'transparent',
         color: theme.palette[ownerState.color].main,
         border: `2px solid ${theme.palette[ownerState.color].main}`,
       }),
-      // SOFT
       ...(softVariant && {
         color: theme.palette[ownerState.color][isLight ? 'dark' : 'light'],
         backgroundColor: alpha(theme.palette[ownerState.color].main, 0.16),

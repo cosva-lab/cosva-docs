@@ -49,6 +49,32 @@ export default function RHFCode({ name, length = 6 }: RHFCodesProps) {
           }
         };
 
+        const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+          e.preventDefault();
+          const pastedData = e.clipboardData.getData('text');
+          const cleanData = pastedData.replace(/\D/g, ''); // Remove non-digit characters
+          
+          if (cleanData.length > 0) {
+            const newCodeArray = Array(length).fill('');
+            const dataToUse = cleanData.slice(0, length);
+            
+            for (let i = 0; i < dataToUse.length; i++) {
+              newCodeArray[i] = dataToUse[i];
+            }
+            
+            const newValue = newCodeArray.join('');
+            onChange(newValue);
+            
+            // Focus the next empty field or the last field
+            const nextEmptyIndex = newCodeArray.findIndex(char => char === '');
+            const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : length - 1;
+            const targetInput = inputsRef.current[focusIndex];
+            if (targetInput) {
+              targetInput.focus();
+            }
+          }
+        };
+
         return (
           <div>
             <Stack direction="row" spacing={1.5} justifyContent="center">
@@ -59,6 +85,7 @@ export default function RHFCode({ name, length = 6 }: RHFCodesProps) {
                   value={char}
                   onChange={e => handleChange(e.target.value.slice(-1), index)}
                   onKeyDown={e => handleKeyDown(e, index)}
+                  onPaste={handlePaste}
                   inputProps={{
                     maxLength: 1,
                     style: {

@@ -28,7 +28,7 @@ import { useLocales } from 'locales';
 // ----------------------------------------------------------------------
 
 export default function AmplifyLoginView() {
-  const { login } = useAuthContext();
+  const { login, confirmPasswordVerifier } = useAuthContext();
   const { t } = useLocales();
 
   const router = useRouter();
@@ -70,7 +70,22 @@ export default function AmplifyLoginView() {
         router.push(returnTo || PATH_AFTER_LOGIN);
       } else if (result?.challenge === 'NEW_PASSWORD_REQUIRED') {
         // Redirect to new password page with email and session
-        router.push(`${paths.auth.amplify.newPassword}?email=${encodeURIComponent(data.email)}&session=${encodeURIComponent(result.session || '')}`);
+        const sessionParam = result.session === 'internal' ? 'internal' : encodeURIComponent(result.session || '');
+        router.push(`${paths.auth.amplify.newPassword}?email=${encodeURIComponent(data.email)}&session=${sessionParam}`);
+      } else if (result?.challenge === 'PASSWORD_VERIFIER') {
+        // Handle PASSWORD_VERIFIER challenge (SRP flow)
+        console.log('Handling PASSWORD_VERIFIER challenge');
+        const verifierResult = await confirmPasswordVerifier?.(data.email, data.password);
+        
+        if (verifierResult?.success) {
+          router.push(returnTo || PATH_AFTER_LOGIN);
+        } else if (verifierResult?.challenge === 'NEW_PASSWORD_REQUIRED') {
+          // After password verification, user might need to set new password
+          const sessionParam = verifierResult.session === 'internal' ? 'internal' : encodeURIComponent(verifierResult.session || '');
+          router.push(`${paths.auth.amplify.newPassword}?email=${encodeURIComponent(data.email)}&session=${sessionParam}`);
+        } else {
+          setErrorMsg(verifierResult?.error || t('login_failed'));
+        }
       } else {
         reset();
         // Handle specific error types

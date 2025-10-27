@@ -117,7 +117,7 @@ function AppNewInvoiceRow({ row }: AppNewInvoiceRowProps) {
 
         <TableCell>
           <Label
-            variant="soft"
+            variant="outlined"
             color={
               (row.status === 'progress' && 'warning') ||
               (row.status === 'out of date' && 'error') ||

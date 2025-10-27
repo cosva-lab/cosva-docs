@@ -82,8 +82,8 @@ export default function AmplifyNewPasswordView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      if (session) {
-        // NEW_PASSWORD_REQUIRED challenge flow
+      if (session && session !== '') {
+        // NEW_PASSWORD_REQUIRED challenge flow (both internal and external session)
         const result = await confirmNewPassword?.(data.email, data.password);
         if (result?.success) {
           router.push(PATH_AFTER_LOGIN);

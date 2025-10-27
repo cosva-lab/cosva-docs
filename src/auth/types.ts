@@ -42,11 +42,12 @@ type CanRemove = {
     password: string
   ) => Promise<NewPasswordResult>;
   confirmNewPassword?: (email: string, newPassword: string) => Promise<LoginResult>;
+  confirmPasswordVerifier?: (email: string, password: string) => Promise<LoginResult>;
 };
 
 export type LoginResult = {
   success: boolean;
-  challenge?: 'NEW_PASSWORD_REQUIRED';
+  challenge?: 'NEW_PASSWORD_REQUIRED' | 'PASSWORD_VERIFIER';
   email?: string;
   session?: string;
   error?: 'USER_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'USER_NOT_CONFIRMED' | 'TOO_MANY_ATTEMPTS' | string;
@@ -117,4 +118,5 @@ export type AmplifyContextType = CanRemove & {
   resendCodeRegister: (email: string) => Promise<void>;
   newPassword: (email: string, code: string, password: string) => Promise<NewPasswordResult>;
   confirmNewPassword: (email: string, newPassword: string) => Promise<LoginResult>;
+  confirmPasswordVerifier: (email: string, password: string) => Promise<LoginResult>;
 };

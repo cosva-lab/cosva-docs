@@ -6,7 +6,7 @@ type FAQCategoryI18nSchema = Schema['FAQCategoryI18n']['type'];
 type FAQSchema = Schema['FAQ']['type'];
 type FAQI18nSchema = Schema['FAQI18n']['type'];
 type LanguageCode = Schema['LanguageCode']['type'];
-type StatusEnum = Schema['StatusEnum']['type'];
+export type StatusEnum = Schema['StatusEnum']['type'];
 
 // ----------------------------------------------------------------------
 

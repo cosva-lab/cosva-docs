@@ -35,7 +35,7 @@ export default function FAQListView() {
   const router = useRouter();
   const [filters, setFilters] = useState(defaultFilters);
   const { faqs, faqsLoading } = useGetFAQs();
-  const { categories } = useGetFAQCategories();
+  const { categories } = useGetFAQCategories('all');
 
   const handleEdit = useCallback((faq: IFAQ) => {
     router.push(paths.dashboard.faq.edit(faq.id));

@@ -48,6 +48,7 @@ const schema = a.schema({
   FAQCategory: a
     .model({
       logoData: a.json(), // 📦 datos estilo Shrine
+      order: a.integer(),
       status: a.ref('StatusEnum'),
       faqs: a.hasMany('FAQ', 'categoryId'),
       translations: a.hasMany('FAQCategoryI18n', 'categoryId'),
@@ -76,6 +77,7 @@ const schema = a.schema({
     .model({
       categoryId: a.id().required(),
       category: a.belongsTo('FAQCategory', 'categoryId'),
+      order: a.integer(),
       tags: a.string().array(),
       status: a.ref('StatusEnum'),
       translations: a.hasMany('FAQI18n', 'faqId'),

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 // @mui
 import LoadingButton from '@mui/lab/LoadingButton';
 import Card from '@mui/material/Card';
@@ -38,11 +38,24 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
   const router = useRouter();
   const mdUp = useResponsive('up', 'md');
   const { enqueueSnackbar } = useSnackbar();
-  const { categories } = useGetFAQCategories();
+  const { categories } = useGetFAQCategories('all');
+
+  // Get categoryId from URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const categoryIdFromUrl = urlParams.get('categoryId');
 
   const [categoryId, setCategoryId] = useState<string>(
-    currentFAQ?.categoryId || ''
+    currentFAQ?.categoryId || categoryIdFromUrl || ''
   );
+  const [isCategoryLocked, setIsCategoryLocked] = useState(false);
+
+  // Lock category if it comes from URL
+  useEffect(() => {
+    if (categoryIdFromUrl) {
+      setIsCategoryLocked(true);
+      setCategoryId(categoryIdFromUrl);
+    }
+  }, [categoryIdFromUrl]);
   const [tags, setTags] = useState<string[]>(() => {
     const faqTags = currentFAQ?.tags || [];
     return faqTags.filter((t): t is string => t !== null);
@@ -212,6 +225,7 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
                 value={categoryId}
                 label="Category"
                 onChange={e => setCategoryId(e.target.value)}
+                disabled={isCategoryLocked}
               >
                 {categories.map(category => (
                   <MenuItem key={category.id} value={category.id}>
@@ -219,6 +233,11 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
                   </MenuItem>
                 ))}
               </Select>
+              {isCategoryLocked && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                  Category is locked for this operation
+                </Typography>
+              )}
             </FormControl>
 
             <FormControl fullWidth>

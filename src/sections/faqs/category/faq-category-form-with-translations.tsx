@@ -157,18 +157,25 @@ export default function FAQCategoryFormWithTranslations({
         }
       }
 
-      enqueueSnackbar(
-        currentCategory ? 'Update success!' : 'Create success!',
-        { variant: 'success' }
-      );
-      router.push(paths.dashboard.faqCategory.root);
+      enqueueSnackbar(currentCategory ? 'Update success!' : 'Create success!', {
+        variant: 'success',
+      });
+      router.push(paths.dashboard.faq.list);
     } catch (error) {
       console.error(error);
       enqueueSnackbar('An error occurred', { variant: 'error' });
     } finally {
       setUploading(false);
     }
-  }, [translations, status, logo, logoData, currentCategory, enqueueSnackbar, router]);
+  }, [
+    translations,
+    status,
+    logo,
+    logoData,
+    currentCategory,
+    enqueueSnackbar,
+    router,
+  ]);
 
   const handleDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -257,9 +264,7 @@ export default function FAQCategoryFormWithTranslations({
             <Stack spacing={1.5}>
               <Typography variant="subtitle2">Logo</Typography>
               <Upload
-                file={
-                  logo ? logo : logoData?.urls?.original || null
-                }
+                file={logo ? logo : logoData?.urls?.original || null}
                 maxSize={3145728}
                 onDrop={handleDrop}
                 onDelete={handleRemoveFile}

@@ -16,16 +16,25 @@ const authenticatedClient = generateClient<Schema>({
 
 // ----------------------------------------------------------------------
 
-export function useGetFAQCategories() {
-  const { data, isLoading, error, isValidating } = useSWR(
-    'faq-categories',
+export function useGetFAQCategories(
+  status?: 'all' | 'ACTIVE' | 'INACTIVE' | 'ARCHIVED'
+) {
+  const cacheKey =
+    status && status !== 'all' ? ['faq-categories', status] : 'faq-categories';
+
+  const { data, isLoading, error, isValidating, mutate } = useSWR(
+    cacheKey,
     async () => {
+      const filter =
+        status && status !== 'all' ? { status: { eq: status } } : undefined;
       const result = await client.models.FAQCategory.list({
+        filter,
         authMode: 'apiKey',
         selectionSet: [
           'id',
           'logoData',
           'status',
+          'order',
           'translations.id',
           'translations.name',
           'translations.description',
@@ -43,11 +52,36 @@ export function useGetFAQCategories() {
       categoriesError: error,
       categoriesValidating: isValidating,
       categoriesEmpty: !isLoading && !data?.length,
+      mutate,
     }),
-    [data, error, isLoading, isValidating]
+    [data, error, isLoading, isValidating, mutate]
   );
 
   return memoizedValue;
+}
+
+// ----------------------------------------------------------------------
+
+export function useGetFAQCategoryCounts() {
+  const { data } = useSWR('faq-category-counts', async () => {
+    const result = await client.models.FAQCategory.list({
+      authMode: 'apiKey',
+      selectionSet: ['status'],
+    });
+    return result.data;
+  });
+
+  const counts = useMemo(() => {
+    const categories = data || [];
+    return {
+      all: categories.length,
+      ACTIVE: categories.filter(cat => cat.status === 'ACTIVE').length,
+      INACTIVE: categories.filter(cat => cat.status === 'INACTIVE').length,
+      ARCHIVED: categories.filter(cat => cat.status === 'ARCHIVED').length,
+    };
+  }, [data]);
+
+  return counts;
 }
 
 // ----------------------------------------------------------------------
@@ -92,24 +126,30 @@ export function useGetFAQCategory(id: string) {
 // ----------------------------------------------------------------------
 
 export function useGetFAQs(categoryId?: string) {
-  const { data, isLoading, error, isValidating } = useSWR('faqs', async () => {
-    const filter = categoryId ? { categoryId: { eq: categoryId } } : undefined;
-    const result = await client.models.FAQ.list({
-      filter,
-      authMode: 'apiKey',
-      selectionSet: [
-        'id',
-        'categoryId',
-        'tags',
-        'status',
-        'translations.id',
-        'translations.answer',
-        'translations.question',
-        'translations.lang',
-      ],
-    });
-    return result.data;
-  });
+  const { data, isLoading, error, isValidating, mutate } = useSWR(
+    'faqs',
+    async () => {
+      const filter = categoryId
+        ? { categoryId: { eq: categoryId } }
+        : undefined;
+      const result = await client.models.FAQ.list({
+        filter,
+        authMode: 'apiKey',
+        selectionSet: [
+          'id',
+          'categoryId',
+          'tags',
+          'status',
+          'order',
+          'translations.id',
+          'translations.answer',
+          'translations.question',
+          'translations.lang',
+        ],
+      });
+      return result.data;
+    }
+  );
 
   const memoizedValue = useMemo(
     () => ({
@@ -118,8 +158,9 @@ export function useGetFAQs(categoryId?: string) {
       faqsError: error,
       faqsValidating: isValidating,
       faqsEmpty: !isLoading && !data?.length,
+      mutate,
     }),
-    [data, error, isLoading, isValidating]
+    [data, error, isLoading, isValidating, mutate]
   );
 
   return memoizedValue;
@@ -170,13 +211,28 @@ export function useGetFAQ(id: string) {
 export async function createFAQCategory(data: {
   logoData?: unknown;
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+  order?: number;
   translations: { lang: string; name: string; description?: string }[];
 }) {
   try {
+    // Get max order from existing categories to place new one at the end
+    const { data: existingCategories } =
+      await authenticatedClient.models.FAQCategory.list({
+        authMode: 'userPool',
+        selectionSet: ['order'],
+      });
+
+    const maxOrder = existingCategories.reduce((max, cat) => {
+      return Math.max(max, cat.order ?? 0);
+    }, -1);
+
+    const newOrder = maxOrder + 1;
+
     // Create the main category with user authentication
     const category = await authenticatedClient.models.FAQCategory.create({
       logoData: data.logoData as Schema['FAQCategory']['type']['logoData'],
       status: data.status,
+      order: newOrder,
     });
 
     // Create translations with user authentication
@@ -220,15 +276,30 @@ export async function createFAQ(data: {
   categoryId: string;
   tags: string[];
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+  order?: number;
   translations: { lang: string; question: string; answer: string }[];
 }) {
   try {
+    // Get max order from existing FAQs in the same category to place new one at the end
+    const { data: existingFAQs } = await authenticatedClient.models.FAQ.list({
+      filter: { categoryId: { eq: data.categoryId } },
+      authMode: 'userPool',
+      selectionSet: ['order'],
+    });
+
+    const maxOrder = existingFAQs.reduce((max, f) => {
+      return Math.max(max, f.order ?? 0);
+    }, -1);
+
+    const newOrder = maxOrder + 1;
+
     // Create the main FAQ with user authentication
     const faq = await authenticatedClient.models.FAQ.create(
       {
         categoryId: data.categoryId,
         tags: data.tags,
         status: data.status,
+        order: newOrder,
       },
       { authMode: 'userPool' }
     );
@@ -276,6 +347,7 @@ export async function updateFAQ(
     categoryId: string;
     tags: string[];
     status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+    order?: number;
     translations: { lang: string; question: string; answer: string }[];
   }
 ) {
@@ -287,6 +359,7 @@ export async function updateFAQ(
         categoryId: data.categoryId,
         tags: data.tags,
         status: data.status,
+        order: data.order,
       },
       { authMode: 'userPool' }
     );
@@ -415,6 +488,7 @@ export async function updateFAQCategory(
   data: {
     logoData?: FileData;
     status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+    order?: number;
     translations: { lang: string; name: string; description?: string }[];
   }
 ) {
@@ -506,6 +580,44 @@ export async function updateFAQCategory(
     return { data: category.data, error: null };
   } catch (error) {
     console.error('Error updating FAQ category:', error);
+    return { data: null, error };
+  }
+}
+
+// ----------------------------------------------------------------------
+
+export async function updateCategoryOrder(id: string, order: number) {
+  try {
+    const category = await authenticatedClient.models.FAQCategory.update(
+      {
+        id,
+        order,
+      },
+      { authMode: 'userPool' }
+    );
+
+    return { data: category.data, error: null };
+  } catch (error) {
+    console.error('Error updating category order:', error);
+    return { data: null, error };
+  }
+}
+
+// ----------------------------------------------------------------------
+
+export async function updateFAQOrder(id: string, order: number) {
+  try {
+    const faq = await authenticatedClient.models.FAQ.update(
+      {
+        id,
+        order,
+      },
+      { authMode: 'userPool' }
+    );
+
+    return { data: faq.data, error: null };
+  } catch (error) {
+    console.error('Error updating FAQ order:', error);
     return { data: null, error };
   }
 }

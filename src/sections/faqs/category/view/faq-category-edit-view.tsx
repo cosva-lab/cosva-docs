@@ -28,8 +28,8 @@ export default function FAQCategoryEditView() {
             href: paths.dashboard.root,
           },
           {
-            name: 'FAQ Categories',
-            href: paths.dashboard.faqCategory.root,
+            name: 'FAQ',
+            href: paths.dashboard.faq.list,
           },
           {
             name: 'Edit',

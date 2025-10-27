@@ -83,17 +83,9 @@ export function useNavData() {
             path: paths.dashboard.faq.root,
             icon: ICONS.faq,
             children: [
+              { title: 'Categorías', path: paths.dashboard.faq.unified },
               { title: t('list'), path: paths.dashboard.faq.list },
               { title: t('create'), path: paths.dashboard.faq.new },
-            ],
-          },
-          {
-            title: 'FAQ Categories',
-            path: paths.dashboard.faqCategory.root,
-            icon: ICONS.folder,
-            children: [
-              { title: t('list'), path: paths.dashboard.faqCategory.list },
-              { title: t('create'), path: paths.dashboard.faqCategory.new },
             ],
           },
         ],

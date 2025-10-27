@@ -23,8 +23,8 @@ export default function FAQCategoryCreateView() {
             href: paths.dashboard.root,
           },
           {
-            name: 'FAQ Categories',
-            href: paths.dashboard.faqCategory.root,
+            name: 'FAQ',
+            href: paths.dashboard.faq.list,
           },
           {
             name: 'Create',

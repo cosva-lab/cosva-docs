@@ -11,6 +11,7 @@ export function accordion(theme: Theme) {
       styleOverrides: {
         root: {
           backgroundColor: 'transparent',
+          boxShadow: theme.customShadows.z4,
           [`&.${accordionClasses.expanded}`]: {
             boxShadow: theme.customShadows.z8,
             borderRadius: theme.shape.borderRadius,

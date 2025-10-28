@@ -15,6 +15,28 @@ const authenticatedClient = generateClient<Schema>({
   authMode: 'userPool',
 });
 
+const injectLogoDataUrl = async <
+  T extends { logoData: Pick<FileData, 'id'> | null }
+>(
+  row: T
+): Promise<T & { logoData: FileDataWithUrl }> => {
+  const logoData: FileDataWithUrl | null = row.logoData
+    ? ({
+        ...row.logoData,
+        url: (
+          await getUrl({
+            path: row.logoData.id,
+          })
+        ).url.toString(),
+      } as FileDataWithUrl)
+    : null;
+  const data = {
+    ...row,
+    logoData,
+  } as unknown as IFAQCategory;
+
+  return data as unknown as T & { logoData: FileDataWithUrl };
+};
 // ----------------------------------------------------------------------
 
 export function useGetFAQCategories(
@@ -52,27 +74,9 @@ export function useGetFAQCategories(
         ],
       });
 
-      const data: IFAQCategory[] = await Promise.all(
-        result.data.map(async (category): Promise<IFAQCategory> => {
-          const logoData: FileDataWithUrl | null = category.logoData
-            ? ({
-                ...category.logoData,
-                url: (
-                  await getUrl({
-                    path: category.logoData.id,
-                  })
-                ).url.toString(),
-              } as FileDataWithUrl)
-            : null;
-          const data = {
-            ...category,
-            logoData,
-          } as unknown as IFAQCategory;
-          return data;
-        })
-      );
+      const data: IFAQCategory[] = result.data as unknown as IFAQCategory[];
 
-      return data;
+      return await Promise.all(data.map(injectLogoDataUrl));
     }
   );
 
@@ -138,7 +142,7 @@ export function useGetFAQCategory(id: string) {
           ],
         }
       );
-      return result.data;
+      return injectLogoDataUrl(result.data as unknown as IFAQCategory);
     }
   );
 

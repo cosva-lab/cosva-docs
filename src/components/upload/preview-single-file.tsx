@@ -6,7 +6,7 @@ import Image from '../image';
 // ----------------------------------------------------------------------
 
 type Props = {
-  imgUrl?: string;
+  imgUrl?: string | null;
 };
 
 export default function SingleFilePreview({ imgUrl = '' }: Props) {
@@ -23,7 +23,7 @@ export default function SingleFilePreview({ imgUrl = '' }: Props) {
     >
       <Image
         alt="file preview"
-        src={imgUrl}
+        src={imgUrl || ''}
         sx={{
           width: 1,
           height: 1,

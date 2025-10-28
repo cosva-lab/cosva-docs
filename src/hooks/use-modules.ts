@@ -1,3 +1,3 @@
 export const useModules = () => ({
-  i18n: false,
+  i18n: true,
 });

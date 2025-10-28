@@ -29,7 +29,7 @@ const Logo = forwardRef<HTMLDivElement, LogoProps>(
       <Box
         component="img"
         src={!isLight ? '/logo/logoDark.png' : '/logo/logoLight.png'}
-        sx={{ height: 70, cursor: 'pointer', ...sx }}
+        sx={{ height: 50, cursor: 'pointer', objectFit: 'contain', ...sx }}
       />
     );
 

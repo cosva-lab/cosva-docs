@@ -30,7 +30,7 @@ import { LanguageSelector } from 'components/language-selector';
 import { Upload } from 'components/upload';
 import TextField from '@mui/material/TextField';
 // utils
-import { uploadFileToStorage } from 'utils/upload-file';
+import { deleteFileFromStorage, uploadFileToStorage } from 'utils/upload-file';
 
 // ----------------------------------------------------------------------
 
@@ -50,6 +50,7 @@ export default function FAQCategoryFormWithTranslations({
     currentCategory?.status || 'ACTIVE'
   );
   const [logo, setLogo] = useState<File | null>(null);
+
   const [logoData, setLogoData] = useState<FileData | null>(
     (currentCategory?.logoData as FileData) || null
   );
@@ -115,11 +116,11 @@ export default function FAQCategoryFormWithTranslations({
   );
 
   const onSubmit = useCallback(async () => {
+    // Upload file if there's a new logo
+    let finalLogoData: FileData | undefined = undefined;
     try {
       setUploading(true);
 
-      // Upload file if there's a new logo
-      let finalLogoData = logoData;
       if (logo) {
         finalLogoData = await uploadFileToStorage({
           file: logo,
@@ -134,9 +135,9 @@ export default function FAQCategoryFormWithTranslations({
       }));
 
       if (currentCategory) {
-        // Update existing category
+        // Update existing category - only include logoData if a new logo was uploaded
         const result = await updateFAQCategory(currentCategory.id, {
-          logoData: finalLogoData || undefined,
+          logoData: finalLogoData,
           status,
           translations: translationsData,
         });
@@ -148,7 +149,7 @@ export default function FAQCategoryFormWithTranslations({
       } else {
         // Create new category
         const result = await createFAQCategory({
-          logoData: finalLogoData || undefined,
+          logoData: finalLogoData,
           status,
           translations: translationsData,
         });
@@ -160,26 +161,25 @@ export default function FAQCategoryFormWithTranslations({
       }
 
       enqueueSnackbar(
-        currentCategory ? t('category.update_success') : t('category.create_success'),
+        currentCategory
+          ? t('category.update_success')
+          : t('category.create_success'),
         { variant: 'success' }
       );
       router.push(paths.dashboard.faq.categories.root);
     } catch (error) {
+      // remove the logo from the storage if it was uploaded
+      if (finalLogoData)
+        await deleteFileFromStorage(finalLogoData.id).catch(error =>
+          console.error('Error deleting logo from storage:', error)
+        );
+
       console.error(error);
       enqueueSnackbar(t('category.error_occurred'), { variant: 'error' });
     } finally {
       setUploading(false);
     }
-  }, [
-    translations,
-    status,
-    logo,
-    logoData,
-    currentCategory,
-    enqueueSnackbar,
-    router,
-    t,
-  ]);
+  }, [translations, status, logo, currentCategory, enqueueSnackbar, router, t]);
 
   const handleDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];

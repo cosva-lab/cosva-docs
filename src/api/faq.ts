@@ -32,7 +32,7 @@ export function useGetFAQCategories(
         authMode: 'apiKey',
         selectionSet: [
           'id',
-          'logoData',
+          'logoData.*',
           'status',
           'order',
           'translations.id',
@@ -106,7 +106,7 @@ export function useGetFAQCategory(id: string) {
           authMode: 'apiKey',
           selectionSet: [
             'id',
-            'logoData',
+            'logoData.*',
             'status',
             'order',
             'translations.id',
@@ -136,8 +136,10 @@ export function useGetFAQCategory(id: string) {
 // ----------------------------------------------------------------------
 
 export function useGetFAQs(categoryId?: string) {
+  const cacheKey = categoryId ? ['faqs', categoryId] : 'faqs';
+
   const { data, isLoading, error, isValidating, mutate } = useSWR(
-    'faqs',
+    cacheKey,
     async () => {
       const filter = categoryId
         ? { categoryId: { eq: categoryId } }
@@ -219,7 +221,7 @@ export function useGetFAQ(id: string) {
 // ----------------------------------------------------------------------
 
 export async function createFAQCategory(data: {
-  logoData?: unknown;
+  logoData?: FileData;
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
   order?: number;
   translations: { lang: string; name: string; description?: string }[];
@@ -240,7 +242,7 @@ export async function createFAQCategory(data: {
 
     // Create the main category with user authentication
     const category = await authenticatedClient.models.FAQCategory.create({
-      logoData: data.logoData as Schema['FAQCategory']['type']['logoData'],
+      logoData: data.logoData,
       status: data.status,
       order: newOrder,
     });
@@ -507,8 +509,8 @@ export async function updateFAQCategory(
     const category = await authenticatedClient.models.FAQCategory.update(
       {
         id,
-        logoData: data.logoData,
         status: data.status,
+        ...(data.logoData && { logoData: data.logoData }),
       },
       { authMode: 'userPool' }
     );

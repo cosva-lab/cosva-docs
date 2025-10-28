@@ -61,20 +61,20 @@ export function useNavData() {
       // OVERVIEW
       // ----------------------------------------------------------------------
       {
-        subheader: t('overview'),
+        subheader: t('pages.overview'),
         items: [
           {
-            title: t('app'),
+            title: t('pages.app'),
             path: paths.dashboard.root,
             icon: ICONS.dashboard,
           },
         ],
       },
       {
-        subheader: 'Administración',
+        subheader: t('pages.administration'),
         items: [
           {
-            title: t('blog'),
+            title: t('pages.blog'),
             path: paths.dashboard.post.root,
             icon: ICONS.blog,
             children: [
@@ -83,12 +83,12 @@ export function useNavData() {
             ],
           },
           {
-            title: 'FAQ',
+            title: t('pages.faq'),
             path: paths.dashboard.faq.root,
             icon: ICONS.faq,
             children: [
               {
-                title: 'Categorías',
+                title: t('pages.categories'),
                 path: paths.dashboard.faq.categories.root,
                 children: [
                   {
@@ -102,7 +102,7 @@ export function useNavData() {
                 ],
               },
               {
-                title: 'Preguntas frecuentes',
+                title: t('pages.frequently_asked'),
                 path: paths.dashboard.faq.list,
                 children: [
                   { title: t('list'), path: paths.dashboard.faq.list },

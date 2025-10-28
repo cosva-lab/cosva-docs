@@ -15,6 +15,7 @@ import { UploadProps } from './types';
 import RejectionFiles from './errors-rejection-files';
 import MultiFilePreview from './preview-multi-file';
 import SingleFilePreview from './preview-single-file';
+import { useEffect } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -35,7 +36,13 @@ export default function Upload({
   sx,
   ...other
 }: UploadProps) {
-  const { getRootProps, getInputProps, isDragActive, isDragReject, fileRejections } = useDropzone({
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    isDragReject,
+    fileRejections,
+  } = useDropzone({
     multiple,
     disabled,
     ...other,
@@ -48,7 +55,12 @@ export default function Upload({
   const hasError = isDragReject || !!error;
 
   const renderPlaceholder = (
-    <Stack spacing={3} alignItems="center" justifyContent="center" flexWrap="wrap">
+    <Stack
+      spacing={3}
+      alignItems="center"
+      justifyContent="center"
+      flexWrap="wrap"
+    >
       <UploadIllustration sx={{ width: 1, maxWidth: 200 }} />
       <Stack spacing={1} sx={{ textAlign: 'center' }}>
         <Typography variant="h6">Drop or Select file</Typography>
@@ -70,9 +82,15 @@ export default function Upload({
     </Stack>
   );
 
-  const renderSinglePreview = (
-    <SingleFilePreview imgUrl={typeof file === 'string' ? file : file?.preview} />
-  );
+  const imgUrl = file instanceof File ? URL.createObjectURL(file) : file;
+
+  useEffect(() => {
+    return () => {
+      if (imgUrl) URL.revokeObjectURL(imgUrl);
+    };
+  }, [imgUrl]);
+
+  const renderSinglePreview = <SingleFilePreview imgUrl={imgUrl} />;
 
   const removeSinglePreview = hasFile && onDelete && (
     <IconButton
@@ -83,10 +101,10 @@ export default function Upload({
         right: 16,
         zIndex: 9,
         position: 'absolute',
-        color: (theme) => alpha(theme.palette.common.white, 0.8),
-        bgcolor: (theme) => alpha(theme.palette.grey[900], 0.72),
+        color: theme => alpha(theme.palette.common.white, 0.8),
+        bgcolor: theme => alpha(theme.palette.grey[900], 0.72),
         '&:hover': {
-          bgcolor: (theme) => alpha(theme.palette.grey[900], 0.48),
+          bgcolor: theme => alpha(theme.palette.grey[900], 0.48),
         },
       }}
     >
@@ -97,12 +115,21 @@ export default function Upload({
   const renderMultiPreview = hasFiles && (
     <>
       <Box sx={{ my: 3 }}>
-        <MultiFilePreview files={files} thumbnail={thumbnail} onRemove={onRemove} />
+        <MultiFilePreview
+          files={files}
+          thumbnail={thumbnail}
+          onRemove={onRemove}
+        />
       </Box>
 
       <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
         {onRemoveAll && (
-          <Button color="inherit" variant="outlined" size="small" onClick={onRemoveAll}>
+          <Button
+            color="inherit"
+            variant="outlined"
+            size="small"
+            onClick={onRemoveAll}
+          >
             Remove All
           </Button>
         )}
@@ -132,9 +159,9 @@ export default function Upload({
           cursor: 'pointer',
           overflow: 'hidden',
           position: 'relative',
-          bgcolor: (theme) => alpha(theme.palette.grey[500], 0.08),
-          border: (theme) => `1px dashed ${alpha(theme.palette.grey[500], 0.2)}`,
-          transition: (theme) => theme.transitions.create(['opacity', 'padding']),
+          bgcolor: theme => alpha(theme.palette.grey[500], 0.08),
+          border: theme => `1px dashed ${alpha(theme.palette.grey[500], 0.2)}`,
+          transition: theme => theme.transitions.create(['opacity', 'padding']),
           '&:hover': {
             opacity: 0.72,
           },
@@ -148,7 +175,7 @@ export default function Upload({
           ...(hasError && {
             color: 'error.main',
             borderColor: 'error.main',
-            bgcolor: (theme) => alpha(theme.palette.error.main, 0.08),
+            bgcolor: theme => alpha(theme.palette.error.main, 0.08),
           }),
           ...(hasFile && {
             padding: '24% 0',

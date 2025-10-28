@@ -13,7 +13,7 @@ import FAQFormWithTranslations from '../faq-form-with-translations';
 
 export default function FAQCreateView() {
   const settings = useSettingsContext();
-  const { t } = useTranslation(['faq', 'general']);
+  const { t } = useTranslation(['faq', 'translations']);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -29,7 +29,7 @@ export default function FAQCreateView() {
             href: paths.dashboard.faq.root,
           },
           {
-            name: t('general:create'),
+            name: t('translations:create'),
           },
         ]}
         sx={{

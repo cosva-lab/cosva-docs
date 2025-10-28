@@ -18,7 +18,7 @@ export default function FAQCategoryEditView() {
   const settings = useSettingsContext();
   const params = useParams();
   const { category, categoryLoading } = useGetFAQCategory(params.id || '');
-  const { t } = useTranslation(['faq', 'general']);
+  const { t } = useTranslation(['faq', 'translations']);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -34,7 +34,7 @@ export default function FAQCategoryEditView() {
             href: paths.dashboard.faq.categories.root,
           },
           {
-            name: t('general:edit'),
+            name: t('translations:edit'),
           },
         ]}
         sx={{

@@ -20,7 +20,7 @@ export function useGetPosts() {
       postsLoading: isLoading,
       postsError: error,
       postsValidating: isValidating,
-      postsEmpty: !isLoading && !data?.posts.length,
+      postsEmpty: !isLoading && !data?.posts?.length,
     }),
     [data?.posts, error, isLoading, isValidating]
   );

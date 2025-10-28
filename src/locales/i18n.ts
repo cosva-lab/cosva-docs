@@ -22,6 +22,7 @@ i18n
     fallbackLng: lng,
     debug: false,
     defaultNS: 'translations',
+    ns: ['translations', 'faq'],
     backend: {
       backends: [
         resourcesToBackend(

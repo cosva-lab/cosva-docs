@@ -13,7 +13,7 @@ import FAQCategoryFormWithTranslations from '../faq-category-form-with-translati
 
 export default function FAQCategoryCreateView() {
   const settings = useSettingsContext();
-  const { t } = useTranslation(['faq', 'general']);
+  const { t } = useTranslation(['faq', 'translations']);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -29,7 +29,7 @@ export default function FAQCategoryCreateView() {
             href: paths.dashboard.faq.categories.root,
           },
           {
-            name: t('general:create'),
+            name: t('translations:create'),
           },
         ]}
         sx={{

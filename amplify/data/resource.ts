@@ -39,6 +39,21 @@ const schema = a.schema({
     'hi', // हिन्दी
   ]),
   StatusEnum: a.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']),
+  UserQuestionStatusEnum: a.enum(['PENDING', 'ANSWERED', 'ARCHIVED']),
+
+  FileMetadata: a.customType({
+    filename: a.string().required(),
+    mime_type: a.string().required(),
+    size: a.integer(),
+    width: a.integer(),
+    height: a.integer(),
+  }),
+
+  FileData: a.customType({
+    id: a.string().required(),
+    storage: a.string().required(),
+    metadata: a.ref('FileMetadata').required(),
+  }),
 
   // ======================================================
   //  MODELOS DE NEGOCIO
@@ -47,7 +62,7 @@ const schema = a.schema({
   // FAQ Category
   FAQCategory: a
     .model({
-      logoData: a.json(), // 📦 datos estilo Shrine
+      logoData: a.ref('FileData'),
       order: a.integer(),
       status: a.ref('StatusEnum'),
       faqs: a.hasMany('FAQ', 'categoryId'),
@@ -104,7 +119,7 @@ const schema = a.schema({
   // Documentation Section
   DocumentationSection: a
     .model({
-      logoData: a.json(), // 📦 datos estilo Shrine
+      logoData: a.ref('FileData'),
       order: a.integer(),
       status: a.ref('StatusEnum'),
       articles: a.hasMany('DocumentationArticle', 'sectionId'),
@@ -155,6 +170,22 @@ const schema = a.schema({
     .authorization(allow => [
       allow.publicApiKey().to(['read']),
       allow.authenticated().to(['read', 'create', 'update', 'delete']),
+    ]),
+
+  // User Questions/Contact Form
+  UserQuestion: a
+    .model({
+      name: a.string().required(),
+      email: a.string().required(),
+      subject: a.string().required(),
+      message: a.string().required(),
+      status: a.ref('UserQuestionStatusEnum'),
+      response: a.string(), // Admin response
+      answeredAt: a.datetime(),
+    })
+    .authorization(allow => [
+      allow.publicApiKey().to(['create']), // Anyone can create a question
+      allow.authenticated().to(['read', 'update', 'delete']), // Only authenticated users can read/update/delete
     ]),
 
   // ======================================================

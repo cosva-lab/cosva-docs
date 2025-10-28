@@ -18,7 +18,7 @@ export default function FAQEditView() {
   const settings = useSettingsContext();
   const params = useParams();
   const { faq, faqLoading } = useGetFAQ(params.id || '');
-  const { t } = useTranslation(['faq', 'general']);
+  const { t } = useTranslation(['faq', 'translations']);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -34,7 +34,7 @@ export default function FAQEditView() {
             href: paths.dashboard.faq.root,
           },
           {
-            name: t('general:edit'),
+            name: t('translations:edit'),
           },
         ]}
         sx={{

@@ -3,7 +3,6 @@ import Card from '@mui/material/Card';
 import Skeleton from '@mui/material/Skeleton';
 import Accordion from '@mui/material/Accordion';
 import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
 
 // ----------------------------------------------------------------------
 
@@ -20,4 +19,3 @@ export function IFAQItemSkeleton() {
     </Card>
   );
 }
-

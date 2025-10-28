@@ -18,15 +18,15 @@ const BlogNewPostPage = lazy(() => import('pages/dashboard/post/new'));
 const BlogEditPostPage = lazy(() => import('pages/dashboard/post/edit'));
 // FAQ
 const FAQListPage = lazy(() => import('pages/dashboard/faq/list'));
-const FAQCategoriesPage = lazy(() => import('pages/dashboard/faq/categories'));
+const FAQCategoriesPage = lazy(() => import('pages/dashboard/faq/categories/list'));
 const FAQCreatePage = lazy(() => import('pages/dashboard/faq/new'));
 const FAQEditPage = lazy(() => import('pages/dashboard/faq/edit'));
 // FAQ CATEGORY
 const FAQCategoryCreatePage = lazy(
-  () => import('pages/dashboard/faq-category/new')
+  () => import('pages/dashboard/faq/categories/new')
 );
 const FAQCategoryEditPage = lazy(
-  () => import('pages/dashboard/faq-category/edit')
+  () => import('pages/dashboard/faq/categories/edit')
 );
 // BLANK PAGE
 const BlankPage = lazy(() => import('pages/dashboard/blank'));

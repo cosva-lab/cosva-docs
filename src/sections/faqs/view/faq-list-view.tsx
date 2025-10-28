@@ -3,14 +3,13 @@ import { useRouter } from 'routes/hooks';
 // @mui
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 // routes
 import { paths } from 'routes/paths';
 import { RouterLink } from 'routes/components';
 // api
-import { useGetFAQs, useGetFAQCategories } from 'api/faq';
+import { useGetFAQs } from 'api/faq';
 // components
 import Label from 'components/label';
 import Iconify from 'components/iconify';
@@ -35,14 +34,16 @@ export default function FAQListView() {
   const router = useRouter();
   const [filters, setFilters] = useState(defaultFilters);
   const { faqs, faqsLoading } = useGetFAQs();
-  const { categories } = useGetFAQCategories('all');
 
-  const handleEdit = useCallback((faq: IFAQ) => {
-    router.push(paths.dashboard.faq.edit(faq.id));
-  }, [router]);
+  const handleEdit = useCallback(
+    (faq: IFAQ) => {
+      router.push(paths.dashboard.faq.edit(faq.id));
+    },
+    [router]
+  );
 
   const handleFilters = useCallback((name: string, value: IFAQFilterValue) => {
-    setFilters((prevState) => ({
+    setFilters(prevState => ({
       ...prevState,
       [name]: value,
     }));
@@ -71,7 +72,7 @@ export default function FAQListView() {
           },
           {
             name: 'FAQ',
-            href: paths.dashboard.faq.root,
+            href: paths.dashboard.faq.list,
           },
           {
             name: 'List',
@@ -99,7 +100,7 @@ export default function FAQListView() {
           mb: { xs: 3, md: 5 },
         }}
       >
-        {['all', 'ACTIVE', 'INACTIVE', 'ARCHIVED'].map((tab) => (
+        {['all', 'ACTIVE', 'INACTIVE', 'ARCHIVED'].map(tab => (
           <Tab
             key={tab}
             iconPosition="end"
@@ -107,16 +108,22 @@ export default function FAQListView() {
             label={tab}
             icon={
               <Label
-                variant={((tab === 'all' || tab === filters.status) && 'filled') || 'soft'}
+                variant={
+                  ((tab === 'all' || tab === filters.status) && 'filled') ||
+                  'soft'
+                }
                 color={(tab === 'ACTIVE' && 'success') || 'default'}
               >
                 {tab === 'all' && faqs.length}
 
-                {tab === 'ACTIVE' && faqs.filter((faq) => faq.status === 'ACTIVE').length}
+                {tab === 'ACTIVE' &&
+                  faqs.filter(faq => faq.status === 'ACTIVE').length}
 
-                {tab === 'INACTIVE' && faqs.filter((faq) => faq.status === 'INACTIVE').length}
+                {tab === 'INACTIVE' &&
+                  faqs.filter(faq => faq.status === 'INACTIVE').length}
 
-                {tab === 'ARCHIVED' && faqs.filter((faq) => faq.status === 'ARCHIVED').length}
+                {tab === 'ARCHIVED' &&
+                  faqs.filter(faq => faq.status === 'ARCHIVED').length}
               </Label>
             }
             sx={{ textTransform: 'capitalize' }}
@@ -141,9 +148,8 @@ const applyFilter = ({
   const { status } = filters;
 
   if (status !== 'all') {
-    inputData = inputData.filter((faq) => faq.status === status);
+    inputData = inputData.filter(faq => faq.status === status);
   }
 
   return inputData;
 };
-

@@ -58,13 +58,13 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/faq`,
       new: `${ROOTS.DASHBOARD}/faq/new`,
       list: `${ROOTS.DASHBOARD}/faq/list`,
-      unified: `${ROOTS.DASHBOARD}/faq/unified`,
       edit: (id: string) => `${ROOTS.DASHBOARD}/faq/${id}/edit`,
       details: (id: string) => `${ROOTS.DASHBOARD}/faq/${id}`,
-    },
-    faqCategory: {
-      new: `${ROOTS.DASHBOARD}/faq-category/new`,
-      edit: (id: string) => `${ROOTS.DASHBOARD}/faq-category/${id}/edit`,
+      categories: {
+        root: `${ROOTS.DASHBOARD}/faq/categories`,
+        new: `${ROOTS.DASHBOARD}/faq/categories/new`,
+        edit: (id: string) => `${ROOTS.DASHBOARD}/faq/categories/${id}/edit`,
+      },
     },
   },
 };

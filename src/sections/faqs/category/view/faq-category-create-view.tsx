@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 // @mui
 import Container from '@mui/material/Container';
 // routes
@@ -12,11 +13,12 @@ import FAQCategoryFormWithTranslations from '../faq-category-form-with-translati
 
 export default function FAQCategoryCreateView() {
   const settings = useSettingsContext();
+  const { t } = useTranslation(['faq', 'general']);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <CustomBreadcrumbs
-        heading="Create a new category"
+        heading={t('faq:category.create')}
         links={[
           {
             name: 'Dashboard',
@@ -24,10 +26,10 @@ export default function FAQCategoryCreateView() {
           },
           {
             name: 'FAQ',
-            href: paths.dashboard.faq.list,
+            href: paths.dashboard.faq.categories.root,
           },
           {
-            name: 'Create',
+            name: t('general:create'),
           },
         ]}
         sx={{

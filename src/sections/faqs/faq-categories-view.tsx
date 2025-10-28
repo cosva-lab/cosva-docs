@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 // @mui
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -31,6 +31,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+// hooks
+import { useTranslation } from 'react-i18next';
 // components
 import Iconify from 'components/iconify';
 import Label from 'components/label';
@@ -41,41 +43,31 @@ import { useSnackbar } from 'components/snackbar';
 import {
   useGetFAQCategories,
   useGetFAQCategoryCounts,
-  useGetFAQs,
   updateCategoryOrder,
   updateFAQOrder,
 } from 'api/faq';
 // routes
 import { paths } from 'routes/paths';
 import { RouterLink } from 'routes/components';
-import { useRouter } from 'routes/hooks';
 // types
 import { IFAQ, IFAQCategory, StatusEnum } from 'types/faq';
 
-// ----------------------------------------------------------------------
-
-type Props = {
-  onEditCategory?: (category: IFAQCategory) => void;
-  onEditFAQ?: (faq: IFAQ) => void;
-};
-
-export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
+export default function FAQCategoriesView() {
   const settings = useSettingsContext();
-  const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
-  
+  const { t } = useTranslation('faq');
+
   const [statusFilter, setStatusFilter] = useState<'all' | StatusEnum>('all');
-  
+
   // Get counts from API
   const counts = useGetFAQCategoryCounts();
-  
+
   // Get filtered categories for display
   const {
     categories,
     categoriesLoading,
     mutate: mutateCategories,
   } = useGetFAQCategories(statusFilter);
-  const { faqs, faqsLoading, mutate: mutateFAQs } = useGetFAQs();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -84,28 +76,34 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
     })
   );
 
-  // Group FAQs by category and sort both categories and FAQs
-  const faqsByCategory = useMemo(() => {
+  // Local state for FAQs organized by category
+  const [faqsByCategoryState, setFaqsByCategoryState] = useState<
+    Record<string, IFAQ[]>
+  >({});
+
+  // Initialize state from categories when they load
+  useEffect(() => {
     const grouped: Record<string, IFAQ[]> = {};
 
-    faqs.forEach(faq => {
-      if (!grouped[faq.categoryId]) {
-        grouped[faq.categoryId] = [];
+    categories.forEach(category => {
+      if (category.faqs) {
+        const faqsArray = Array.isArray(category.faqs) ? category.faqs : [];
+        if (faqsArray.length > 0) {
+          // Sort FAQs by order
+          const sortedFAQs = [...faqsArray].sort((a, b) => {
+            const orderA = a.order ?? 999;
+            const orderB = b.order ?? 999;
+            return orderA - orderB;
+          });
+          grouped[category.id] = sortedFAQs as IFAQ[];
+        }
       }
-      grouped[faq.categoryId].push(faq);
     });
 
-    // Sort FAQs within each category by order
-    Object.keys(grouped).forEach(categoryId => {
-      grouped[categoryId].sort((a, b) => {
-        const orderA = a.order ?? 999;
-        const orderB = b.order ?? 999;
-        return orderA - orderB;
-      });
-    });
+    setFaqsByCategoryState(grouped);
+  }, [categories]);
 
-    return grouped;
-  }, [faqs]);
+  const faqsByCategory = faqsByCategoryState;
 
   // Sort categories by order (no need to filter, already filtered by API)
   const [localCategories, setLocalCategories] =
@@ -134,28 +132,37 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
       const oldIndex = localCategories.findIndex(c => c.id === active.id);
       const newIndex = localCategories.findIndex(c => c.id === over.id);
 
+      // Optimistic update: update UI immediately
       const newCategories = arrayMove(localCategories, oldIndex, newIndex);
+      const previousState = [...localCategories];
+
       setLocalCategories(newCategories);
 
       // Update orders in database
       try {
-        await Promise.all(
-          newCategories.map(async (category, index) => {
-            const result = await updateCategoryOrder(category.id, index);
-            if (result.error) {
-              throw new Error(
-                `Error updating order for ${category.translations?.[0]?.name}`
-              );
-            }
-            return result;
-          })
+        const results = await Promise.all(
+          newCategories.map((category, index) =>
+            updateCategoryOrder(category.id, index)
+          )
         );
 
+        // Check if any result has an error
+        const hasError = results.some(result => result.error);
+        if (hasError) {
+          throw new Error('One or more category order updates failed');
+        }
+
         mutateCategories();
-        enqueueSnackbar('Category order updated', { variant: 'success' });
+        enqueueSnackbar(t('categories.category_order_updated'), {
+          variant: 'success',
+        });
       } catch (error) {
         console.error('Error updating category orders:', error);
-        enqueueSnackbar('Error updating category order', { variant: 'error' });
+        // Rollback on error
+        setLocalCategories(previousState);
+        enqueueSnackbar(t('categories.error_order_update'), {
+          variant: 'error',
+        });
       }
     }
   };
@@ -169,25 +176,38 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
       const newIndex = categoryFAQs.findIndex(f => f.id === over.id);
 
       if (oldIndex !== -1 && newIndex !== -1) {
+        // Optimistic update: update UI immediately
         const newFAQs = arrayMove(categoryFAQs, oldIndex, newIndex);
+        const previousState = { ...faqsByCategoryState };
+
+        setFaqsByCategoryState(prev => ({
+          ...prev,
+          [categoryId]: newFAQs,
+        }));
 
         // Update orders in database
         try {
-          await Promise.all(
-            newFAQs.map(async (faq, index) => {
-              const result = await updateFAQOrder(faq.id, index);
-              if (result.error) {
-                throw new Error(`Error updating order for FAQ`);
-              }
-              return result;
-            })
+          const results = await Promise.all(
+            newFAQs.map((faq, index) => updateFAQOrder(faq.id, index))
           );
 
-          mutateFAQs();
-          enqueueSnackbar('FAQ order updated', { variant: 'success' });
+          // Check if any result has an error
+          const hasError = results.some(result => result.error);
+          if (hasError) {
+            throw new Error('One or more FAQ order updates failed');
+          }
+
+          mutateCategories();
+          enqueueSnackbar(t('categories.faq_order_updated'), {
+            variant: 'success',
+          });
         } catch (error) {
           console.error('Error updating FAQ orders:', error);
-          enqueueSnackbar('Error updating FAQ order', { variant: 'error' });
+          // Rollback on error
+          setFaqsByCategoryState(previousState);
+          enqueueSnackbar(t('categories.error_order_update'), {
+            variant: 'error',
+          });
         }
       }
     }
@@ -200,12 +220,10 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
       <SortableCategoryItem
         key={category.id}
         category={category}
-        onEditCategory={onEditCategory}
         categoryFAQs={categoryFAQs}
-        onEditFAQ={onEditFAQ}
         onFAQsDragEnd={e => handleFAQsDragEnd(category.id, e)}
-        router={router}
         categoryId={category.id}
+        t={t}
       />
     );
   };
@@ -214,7 +232,7 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
     <>
       {[...Array(6)].map((_, index) => (
         <Grid key={index} size={{ xs: 12 }}>
-          <Card sx={{ p: 3 }}>
+          <Card sx={{ p: 3, opacity: 0.5 }}>
             <Stack direction="row" alignItems="center" spacing={2}>
               <Iconify icon="solar:question-circle-bold" width={40} />
               <Stack flexGrow={1}>
@@ -233,25 +251,25 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <CustomBreadcrumbs
-        heading="Categorías de FAQs"
+        heading={t('categories.heading')}
         links={[
           {
             name: 'Dashboard',
             href: paths.dashboard.root,
           },
           {
-            name: 'FAQs',
+            name: t('title'),
           },
         ]}
         action={
           <Stack direction="row" spacing={2}>
             <Button
               component={RouterLink}
-              href={paths.dashboard.faqCategory.new}
+              href={paths.dashboard.faq.categories.new}
               variant="outlined"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
-              New Category
+              {t('categories.new_category')}
             </Button>
             <Button
               component={RouterLink}
@@ -259,7 +277,7 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
-              New FAQ
+              {t('categories.new_faq')}
             </Button>
           </Stack>
         }
@@ -275,7 +293,7 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
           mb: { xs: 3, md: 5 },
         }}
       >
-        {['all', 'ACTIVE', 'INACTIVE', 'ARCHIVED'].map((tab) => (
+        {['all', 'ACTIVE', 'INACTIVE', 'ARCHIVED'].map(tab => (
           <Tab
             key={tab}
             iconPosition="end"
@@ -283,7 +301,10 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
             label={tab}
             icon={
               <Label
-                variant={((tab === 'all' || tab === statusFilter) && 'filled') || 'soft'}
+                variant={
+                  ((tab === 'all' || tab === statusFilter) && 'filled') ||
+                  'soft'
+                }
                 color={
                   (tab === 'ACTIVE' && 'success') ||
                   (tab === 'INACTIVE' && 'warning') ||
@@ -302,23 +323,24 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
       </Tabs>
 
       <Grid container spacing={3}>
-        {categoriesLoading || faqsLoading ? (
+        {categoriesLoading ? (
           renderSkeleton
         ) : categories.length === 0 ? (
           <Grid size={{ xs: 12 }}>
             <Card sx={{ p: 8, textAlign: 'center' }}>
               <Typography variant="h6" sx={{ mb: 1 }}>
-                No categories yet
+                {t('categories.no_categories')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Create your first category to get started
+                {t('categories.no_categories_desc')}
               </Typography>
               <Button
                 variant="contained"
                 startIcon={<Iconify icon="mingcute:add-line" />}
-                onClick={() => router.push(paths.dashboard.faqCategory.new)}
+                component={RouterLink}
+                href={paths.dashboard.faq.categories.new}
               >
-                Create Category
+                {t('categories.create_category')}
               </Button>
             </Card>
           </Grid>
@@ -352,22 +374,18 @@ export default function FAQUnifiedView({ onEditCategory, onEditFAQ }: Props) {
 
 type SortableCategoryItemProps = {
   category: IFAQCategory;
-  onEditCategory?: (category: IFAQCategory) => void;
   categoryFAQs: IFAQ[];
-  onEditFAQ?: (faq: IFAQ) => void;
   onFAQsDragEnd: (event: DragEndEvent) => void;
-  router: ReturnType<typeof useRouter>;
   categoryId: string;
+  t: (key: string) => string;
 };
 
 function SortableCategoryItem({
   category,
-  onEditCategory,
   categoryFAQs,
-  onEditFAQ,
   onFAQsDragEnd,
-  router,
   categoryId,
+  t,
 }: SortableCategoryItemProps) {
   const {
     attributes,
@@ -431,7 +449,8 @@ function SortableCategoryItem({
 
               <Stack flexGrow={1}>
                 <Typography variant="subtitle1">
-                  {category.translations?.[0]?.name || 'Unnamed Category'}
+                  {category.translations?.[0]?.name ||
+                    t('categories.unnamed_category')}
                 </Typography>
                 {category.translations?.[0]?.description && (
                   <Typography variant="body2" color="text.secondary">
@@ -444,9 +463,10 @@ function SortableCategoryItem({
             <Stack direction="row" spacing={1}>
               <IconButton
                 size="small"
+                component={RouterLink}
+                href={paths.dashboard.faq.categories.edit(category.id)}
                 onClick={e => {
                   e.stopPropagation();
-                  onEditCategory?.(category);
                 }}
               >
                 <Iconify icon="solar:pen-bold" />
@@ -463,18 +483,14 @@ function SortableCategoryItem({
                 color="text.secondary"
                 sx={{ fontStyle: 'italic' }}
               >
-                No FAQs in this category yet
+                {t('categories.no_faqs_in_category')}
               </Typography>
             ) : (
               <DndContext sensors={faqSensors} onDragEnd={onFAQsDragEnd}>
                 <SortableContext items={categoryFAQs.map(f => f.id)}>
                   <Stack spacing={2}>
                     {categoryFAQs.map(faq => (
-                      <SortableFAQItem
-                        key={faq.id}
-                        faq={faq}
-                        onEditFAQ={onEditFAQ}
-                      />
+                      <SortableFAQItem key={faq.id} faq={faq} t={t} />
                     ))}
                   </Stack>
                 </SortableContext>
@@ -483,15 +499,12 @@ function SortableCategoryItem({
 
             <Button
               variant="outlined"
+              component={RouterLink}
               startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={() =>
-                router.push(
-                  `${paths.dashboard.faq.new}?categoryId=${categoryId}`
-                )
-              }
+              href={`${paths.dashboard.faq.new}?categoryId=${categoryId}`}
               sx={{ mt: 1 }}
             >
-              Add FAQ to this category
+              {t('categories.add_faq_to_category')}
             </Button>
           </Stack>
         </AccordionDetails>
@@ -502,10 +515,10 @@ function SortableCategoryItem({
 
 type SortableFAQItemProps = {
   faq: IFAQ;
-  onEditFAQ?: (faq: IFAQ) => void;
+  t: (key: string) => string;
 };
 
-function SortableFAQItem({ faq, onEditFAQ }: SortableFAQItemProps) {
+function SortableFAQItem({ faq, t }: SortableFAQItemProps) {
   const {
     attributes,
     listeners,
@@ -541,10 +554,10 @@ function SortableFAQItem({ faq, onEditFAQ }: SortableFAQItemProps) {
 
           <Stack flexGrow={1} spacing={0.5}>
             <Typography variant="subtitle2">
-              {faq.translations?.[0]?.question || 'No question'}
+              {faq.translations?.[0]?.question || t('faq.no_question')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {faq.translations?.[0]?.answer || 'No answer'}
+              {faq.translations?.[0]?.answer || t('faq.no_answer')}
             </Typography>
             {faq.tags && faq.tags.length > 0 && (
               <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1 }}>
@@ -562,7 +575,11 @@ function SortableFAQItem({ faq, onEditFAQ }: SortableFAQItemProps) {
           </Stack>
 
           <Stack direction="row" spacing={1}>
-            <IconButton size="small" onClick={() => onEditFAQ?.(faq)}>
+            <IconButton
+              component={RouterLink}
+              href={paths.dashboard.faq.edit(faq.id)}
+              size="small"
+            >
               <Iconify icon="solar:pen-bold" />
             </IconButton>
           </Stack>

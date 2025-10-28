@@ -2,6 +2,7 @@
   "app": "app",
   "job": "job",
   "user": "user",
+  "subscriptions": "Subscriptions",
   "list": "list",
   "edit": "edit",
   "shop": "shop",
@@ -94,9 +95,18 @@
   "gallery": "Gallery",
   "show": "Show",
   "prices": "Prices",
-  "forms_download":"Download Forms",
+  "forms_download": "Download Forms",
   "upgrade_to_pro": "Upgrade to Pro",
+  "upload_title": "Drop or Select file",
+  "browse": "Browse",
+  "thoroughYourMachine": "thorough your machine",
+  "allowed": "Allowed",
+  "max_size": "Max size of",
   "demo": {
     "title": "English"
+  },
+  "tableFiltersResult": {
+    "found": "results found",
+    "clear": "Clear"
   }
 }

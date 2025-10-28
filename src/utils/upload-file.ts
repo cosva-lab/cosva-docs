@@ -4,7 +4,7 @@ import type { FileData } from '../types/files';
 
 // ----------------------------------------------------------------------
 
-type ModelPath = 'categories' | 'faqs' | 'articles' | 'products' | 'users';
+type ModelPath = 'categories' | 'faq' | 'articles' | 'products' | 'users';
 
 interface UploadFileOptions {
   file: File;

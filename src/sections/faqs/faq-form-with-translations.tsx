@@ -15,6 +15,7 @@ import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 // hooks
 import { useResponsive } from 'hooks/use-responsive';
+import { useTranslation } from 'react-i18next';
 // routes
 import { paths } from 'routes/paths';
 import { useRouter } from 'routes/hooks';
@@ -39,6 +40,7 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
   const mdUp = useResponsive('up', 'md');
   const { enqueueSnackbar } = useSnackbar();
   const { categories } = useGetFAQCategories('all');
+  const { t } = useTranslation('faq');
 
   // Get categoryId from URL params
   const urlParams = new URLSearchParams(window.location.search);
@@ -95,7 +97,9 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
     (lang: LanguageCode, field: string, value: string) => {
       setTranslations(prev =>
         prev.map(t =>
-          t.lang === lang ? { ...t, values: { ...t.values, [field]: value } } : t
+          t.lang === lang
+            ? { ...t, values: { ...t.values, [field]: value } }
+            : t
         )
       );
     },
@@ -142,7 +146,7 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
         });
 
         if (result.error) {
-          enqueueSnackbar('Error updating FAQ', { variant: 'error' });
+          enqueueSnackbar(t('faq.error_updating'), { variant: 'error' });
           return;
         }
       } else {
@@ -155,23 +159,32 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
         });
 
         if (result.error) {
-          enqueueSnackbar('Error creating FAQ', { variant: 'error' });
+          enqueueSnackbar(t('faq.error_creating'), { variant: 'error' });
           return;
         }
       }
 
       enqueueSnackbar(
-        currentFAQ ? 'Update success!' : 'Create success!',
+        currentFAQ ? t('faq.update_success') : t('faq.create_success'),
         { variant: 'success' }
       );
       router.push(paths.dashboard.faq.root);
     } catch (error) {
       console.error(error);
-      enqueueSnackbar('An error occurred', { variant: 'error' });
+      enqueueSnackbar(t('faq.error_occurred'), { variant: 'error' });
     } finally {
       setUploading(false);
     }
-  }, [translations, categoryId, tags, status, currentFAQ, enqueueSnackbar, router]);
+  }, [
+    translations,
+    categoryId,
+    tags,
+    status,
+    currentFAQ,
+    enqueueSnackbar,
+    router,
+    t,
+  ]);
 
   const handleAddTag = useCallback((tag: string) => {
     setTags(prev => {
@@ -187,7 +200,7 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
   const renderLanguageSelector = (
     <Grid size={{ xs: 12 }}>
       <Card>
-        <CardHeader title="Translations" />
+        <CardHeader title={t('faq.translations_title')} />
         <Stack spacing={3} sx={{ p: 3 }}>
           <LanguageSelector
             translations={translations}
@@ -206,24 +219,24 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
       {mdUp && (
         <Grid size={4}>
           <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Details
+            {t('faq.details_title')}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Category, tags, status...
+            {t('faq.details_subtitle')}
           </Typography>
         </Grid>
       )}
 
       <Grid size={{ xs: 12, md: 8 }}>
         <Card>
-          {!mdUp && <CardHeader title="Details" />}
+          {!mdUp && <CardHeader title={t('faq.details_title')} />}
 
           <Stack spacing={3} sx={{ p: 3 }}>
             <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
+              <InputLabel>{t('faq.category')}</InputLabel>
               <Select
                 value={categoryId}
-                label="Category"
+                label={t('faq.category')}
                 onChange={e => setCategoryId(e.target.value)}
                 disabled={isCategoryLocked}
               >
@@ -234,30 +247,36 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
                 ))}
               </Select>
               {isCategoryLocked && (
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                  Category is locked for this operation
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mt: 0.5, display: 'block' }}
+                >
+                  {t('faq.category_locked')}
                 </Typography>
               )}
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
+              <InputLabel>{t('faq.status')}</InputLabel>
               <Select
                 value={status}
-                label="Status"
+                label={t('faq.status')}
                 onChange={e =>
-                  setStatus(e.target.value as 'ACTIVE' | 'INACTIVE' | 'ARCHIVED')
+                  setStatus(
+                    e.target.value as 'ACTIVE' | 'INACTIVE' | 'ARCHIVED'
+                  )
                 }
               >
-                <MenuItem value="ACTIVE">Active</MenuItem>
-                <MenuItem value="INACTIVE">Inactive</MenuItem>
-                <MenuItem value="ARCHIVED">Archived</MenuItem>
+                <MenuItem value="ACTIVE">{t('common.active')}</MenuItem>
+                <MenuItem value="INACTIVE">{t('common.inactive')}</MenuItem>
+                <MenuItem value="ARCHIVED">{t('common.archived')}</MenuItem>
               </Select>
             </FormControl>
 
             <TextField
               fullWidth
-              label="Question"
+              label={t('faq.question')}
               value={currentValues.question || ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 updateTranslation(selectedLang, 'question', e.target.value)
@@ -266,7 +285,7 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
 
             <TextField
               fullWidth
-              label="Answer"
+              label={t('faq.answer')}
               multiline
               rows={6}
               value={currentValues.answer || ''}
@@ -276,7 +295,7 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
             />
 
             <Stack spacing={2}>
-              <Typography variant="subtitle2">Tags</Typography>
+              <Typography variant="subtitle2">{t('faq.tags')}</Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap">
                 {tags.map(tag => (
                   <Chip
@@ -290,7 +309,7 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
                 ))}
                 <TextField
                   size="small"
-                  placeholder="Add tag..."
+                  placeholder={t('faq.add_tag')}
                   onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -328,7 +347,7 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
           size="large"
           onClick={() => router.back()}
         >
-          Cancel
+          {t('faq.cancel')}
         </Button>
 
         <LoadingButton
@@ -339,7 +358,7 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
           disabled={uploading}
           sx={{ ml: 2 }}
         >
-          {!currentFAQ ? 'Create FAQ' : 'Save Changes'}
+          {!currentFAQ ? t('faq.create') : t('faq.save_changes')}
         </LoadingButton>
       </Grid>
     </>
@@ -353,4 +372,3 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
     </Grid>
   );
 }
-

@@ -8,9 +8,6 @@ import {
   esES as esESDate,
 } from '@mui/x-date-pickers/locales';
 
-// PLEASE REMOVE `LOCAL STORAGE` WHEN YOU CHANGE SETTINGS.
-// ----------------------------------------------------------------------
-
 export const allLangs = [
   {
     label: 'Español',

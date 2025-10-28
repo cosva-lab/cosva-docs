@@ -5,7 +5,8 @@ import { paths } from 'routes/paths';
 import { useLocales } from 'locales';
 // components
 import SvgColor from 'components/svg-color';
-
+import QuizIcon from '@mui/icons-material/Quiz';
+import { NavListProps } from 'components/nav-section';
 // ----------------------------------------------------------------------
 
 const icon = (name: string) => (
@@ -44,7 +45,7 @@ const ICONS = {
   ecommerce: icon('ic_ecommerce'),
   analytics: icon('ic_analytics'),
   dashboard: icon('ic_dashboard'),
-  faq: icon('ic_chat'), // Using chat icon for FAQ
+  faq: <QuizIcon />,
 };
 
 // ----------------------------------------------------------------------
@@ -53,7 +54,10 @@ export function useNavData() {
   const { t } = useLocales();
 
   const data = useMemo(
-    () => [
+    (): {
+      subheader: string;
+      items: NavListProps[];
+    }[] => [
       // OVERVIEW
       // ----------------------------------------------------------------------
       {
@@ -83,9 +87,28 @@ export function useNavData() {
             path: paths.dashboard.faq.root,
             icon: ICONS.faq,
             children: [
-              { title: 'Categorías', path: paths.dashboard.faq.unified },
-              { title: t('list'), path: paths.dashboard.faq.list },
-              { title: t('create'), path: paths.dashboard.faq.new },
+              {
+                title: 'Categorías',
+                path: paths.dashboard.faq.categories.root,
+                children: [
+                  {
+                    title: t('list'),
+                    path: paths.dashboard.faq.categories.root,
+                  },
+                  {
+                    title: t('create'),
+                    path: paths.dashboard.faq.categories.new,
+                  },
+                ],
+              },
+              {
+                title: 'Preguntas frecuentes',
+                path: paths.dashboard.faq.list,
+                children: [
+                  { title: t('list'), path: paths.dashboard.faq.list },
+                  { title: t('create'), path: paths.dashboard.faq.new },
+                ],
+              },
             ],
           },
         ],

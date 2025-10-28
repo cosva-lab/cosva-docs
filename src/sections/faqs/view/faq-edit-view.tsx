@@ -1,4 +1,5 @@
 import { useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 // @mui
 import Container from '@mui/material/Container';
 // routes
@@ -17,11 +18,12 @@ export default function FAQEditView() {
   const settings = useSettingsContext();
   const params = useParams();
   const { faq, faqLoading } = useGetFAQ(params.id || '');
+  const { t } = useTranslation(['faq', 'general']);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <CustomBreadcrumbs
-        heading="Edit FAQ"
+        heading={t('faq:faq.edit')}
         links={[
           {
             name: 'Dashboard',
@@ -32,7 +34,7 @@ export default function FAQEditView() {
             href: paths.dashboard.faq.root,
           },
           {
-            name: 'Edit',
+            name: t('general:edit'),
           },
         ]}
         sx={{

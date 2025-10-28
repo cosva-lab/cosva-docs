@@ -1,0 +1,36 @@
+{
+  "title": "Documentación",
+  "section": {
+    "title": "Sección de Documentación",
+    "sections": "Secciones de Documentación",
+    "create": "Crear Sección",
+    "edit": "Editar Sección",
+    "delete": "Eliminar Sección",
+    "name": "Título de Sección",
+    "description": "Descripción",
+    "logo": "Logo",
+    "order": "Orden",
+    "status": "Estado",
+    "active": "Activa",
+    "inactive": "Inactiva",
+    "archived": "Archivada"
+  },
+  "article": {
+    "title": "Artículo de Documentación",
+    "articles": "Artículos",
+    "create": "Crear Artículo",
+    "edit": "Editar Artículo",
+    "delete": "Eliminar Artículo",
+    "title_field": "Título",
+    "content": "Contenido",
+    "section": "Sección",
+    "order": "Orden",
+    "status": "Estado",
+    "search": "Buscar artículos...",
+    "no_results": "No se encontraron artículos",
+    "confirm_delete": "¿Estás seguro de que quieres eliminar este artículo?",
+    "preview": "Vista Previa",
+    "save": "Guardar Artículo"
+  }
+}
+

@@ -1,0 +1,36 @@
+{
+  "title": "Documentation",
+  "section": {
+    "title": "Documentation Section",
+    "sections": "Documentation Sections",
+    "create": "Create Section",
+    "edit": "Edit Section",
+    "delete": "Delete Section",
+    "name": "Section Title",
+    "description": "Description",
+    "logo": "Logo",
+    "order": "Order",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "archived": "Archived"
+  },
+  "article": {
+    "title": "Documentation Article",
+    "articles": "Articles",
+    "create": "Create Article",
+    "edit": "Edit Article",
+    "delete": "Delete Article",
+    "title_field": "Title",
+    "content": "Content",
+    "section": "Section",
+    "order": "Order",
+    "status": "Status",
+    "search": "Search articles...",
+    "no_results": "No articles found",
+    "confirm_delete": "Are you sure you want to delete this article?",
+    "preview": "Preview",
+    "save": "Save Article"
+  }
+}
+

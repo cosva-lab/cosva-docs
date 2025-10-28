@@ -39,6 +39,15 @@ export function useGetFAQCategories(
           'translations.name',
           'translations.description',
           'translations.lang',
+          'faqs.id',
+          'faqs.categoryId',
+          'faqs.status',
+          'faqs.order',
+          'faqs.tags',
+          'faqs.translations.id',
+          'faqs.translations.question',
+          'faqs.translations.answer',
+          'faqs.translations.lang',
         ],
       });
       return result.data;
@@ -47,7 +56,7 @@ export function useGetFAQCategories(
 
   const memoizedValue = useMemo(
     () => ({
-      categories: (data || []) as IFAQCategory[],
+      categories: (data || []) as unknown as IFAQCategory[] as IFAQCategory[],
       categoriesLoading: isLoading,
       categoriesError: error,
       categoriesValidating: isValidating,
@@ -99,6 +108,7 @@ export function useGetFAQCategory(id: string) {
             'id',
             'logoData',
             'status',
+            'order',
             'translations.id',
             'translations.name',
             'translations.description',
@@ -587,37 +597,31 @@ export async function updateFAQCategory(
 // ----------------------------------------------------------------------
 
 export async function updateCategoryOrder(id: string, order: number) {
-  try {
-    const category = await authenticatedClient.models.FAQCategory.update(
-      {
-        id,
-        order,
-      },
-      { authMode: 'userPool' }
-    );
+  const category = await authenticatedClient.models.FAQCategory.update(
+    {
+      id,
+      order,
+    },
+    { authMode: 'userPool' }
+  );
 
-    return { data: category.data, error: null };
-  } catch (error) {
-    console.error('Error updating category order:', error);
-    return { data: null, error };
-  }
+  if (!category.data) throw new Error('Failed to update category order');
+
+  return { data: category.data, error: null };
 }
 
 // ----------------------------------------------------------------------
 
 export async function updateFAQOrder(id: string, order: number) {
-  try {
-    const faq = await authenticatedClient.models.FAQ.update(
-      {
-        id,
-        order,
-      },
-      { authMode: 'userPool' }
-    );
+  const faq = await authenticatedClient.models.FAQ.update(
+    {
+      id,
+      order,
+    },
+    { authMode: 'userPool' }
+  );
 
-    return { data: faq.data, error: null };
-  } catch (error) {
-    console.error('Error updating FAQ order:', error);
-    return { data: null, error };
-  }
+  if (!faq.data) throw new Error('Failed to update FAQ order');
+
+  return { data: faq.data, error: null };
 }

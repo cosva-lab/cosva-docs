@@ -13,6 +13,7 @@ import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 // hooks
 import { useResponsive } from 'hooks/use-responsive';
+import { useTranslation } from 'react-i18next';
 // routes
 import { paths } from 'routes/paths';
 import { useRouter } from 'routes/hooks';
@@ -43,6 +44,7 @@ export default function FAQCategoryFormWithTranslations({
   const router = useRouter();
   const mdUp = useResponsive('up', 'md');
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation('faq');
 
   const [status, setStatus] = useState<'ACTIVE' | 'INACTIVE' | 'ARCHIVED'>(
     currentCategory?.status || 'ACTIVE'
@@ -140,7 +142,7 @@ export default function FAQCategoryFormWithTranslations({
         });
 
         if (result.error) {
-          enqueueSnackbar('Error updating category', { variant: 'error' });
+          enqueueSnackbar(t('category.error_updating'), { variant: 'error' });
           return;
         }
       } else {
@@ -152,18 +154,19 @@ export default function FAQCategoryFormWithTranslations({
         });
 
         if (result.error) {
-          enqueueSnackbar('Error creating category', { variant: 'error' });
+          enqueueSnackbar(t('category.error_creating'), { variant: 'error' });
           return;
         }
       }
 
-      enqueueSnackbar(currentCategory ? 'Update success!' : 'Create success!', {
-        variant: 'success',
-      });
-      router.push(paths.dashboard.faq.list);
+      enqueueSnackbar(
+        currentCategory ? t('category.update_success') : t('category.create_success'),
+        { variant: 'success' }
+      );
+      router.push(paths.dashboard.faq.categories.root);
     } catch (error) {
       console.error(error);
-      enqueueSnackbar('An error occurred', { variant: 'error' });
+      enqueueSnackbar(t('category.error_occurred'), { variant: 'error' });
     } finally {
       setUploading(false);
     }
@@ -175,6 +178,7 @@ export default function FAQCategoryFormWithTranslations({
     currentCategory,
     enqueueSnackbar,
     router,
+    t,
   ]);
 
   const handleDrop = useCallback((acceptedFiles: File[]) => {
@@ -192,7 +196,7 @@ export default function FAQCategoryFormWithTranslations({
   const renderLanguageSelector = (
     <Grid size={{ xs: 12 }}>
       <Card>
-        <CardHeader title="Translations" />
+        <CardHeader title={t('category.translations_title')} />
         <Stack spacing={3} sx={{ p: 3 }}>
           <LanguageSelector
             translations={translations}
@@ -211,22 +215,22 @@ export default function FAQCategoryFormWithTranslations({
       {mdUp && (
         <Grid size={4}>
           <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Details
+            {t('category.details_title')}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Name, description, status...
+            {t('category.details_subtitle')}
           </Typography>
         </Grid>
       )}
 
       <Grid size={{ xs: 12, md: 8 }}>
         <Card>
-          {!mdUp && <CardHeader title="Details" />}
+          {!mdUp && <CardHeader title={t('category.details_title')} />}
 
           <Stack spacing={3} sx={{ p: 3 }}>
             <TextField
               fullWidth
-              label="Category Name"
+              label={t('category.name')}
               value={currentValues.name || ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 updateTranslation(selectedLang, 'name', e.target.value)
@@ -235,7 +239,7 @@ export default function FAQCategoryFormWithTranslations({
 
             <TextField
               fullWidth
-              label="Description"
+              label={t('category.description')}
               multiline
               rows={4}
               value={currentValues.description || ''}
@@ -245,24 +249,24 @@ export default function FAQCategoryFormWithTranslations({
             />
 
             <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
+              <InputLabel>{t('category.status')}</InputLabel>
               <Select
                 value={status}
-                label="Status"
+                label={t('category.status')}
                 onChange={e =>
                   setStatus(
                     e.target.value as 'ACTIVE' | 'INACTIVE' | 'ARCHIVED'
                   )
                 }
               >
-                <MenuItem value="ACTIVE">Active</MenuItem>
-                <MenuItem value="INACTIVE">Inactive</MenuItem>
-                <MenuItem value="ARCHIVED">Archived</MenuItem>
+                <MenuItem value="ACTIVE">{t('common.active')}</MenuItem>
+                <MenuItem value="INACTIVE">{t('common.inactive')}</MenuItem>
+                <MenuItem value="ARCHIVED">{t('common.archived')}</MenuItem>
               </Select>
             </FormControl>
 
             <Stack spacing={1.5}>
-              <Typography variant="subtitle2">Logo</Typography>
+              <Typography variant="subtitle2">{t('category.logo')}</Typography>
               <Upload
                 file={logo ? logo : logoData?.urls?.original || null}
                 maxSize={3145728}
@@ -293,7 +297,7 @@ export default function FAQCategoryFormWithTranslations({
           size="large"
           onClick={() => router.back()}
         >
-          Cancel
+          {t('category.cancel')}
         </Button>
 
         <LoadingButton
@@ -304,7 +308,7 @@ export default function FAQCategoryFormWithTranslations({
           disabled={uploading}
           sx={{ ml: 2 }}
         >
-          {!currentCategory ? 'Create Category' : 'Save Changes'}
+          {!currentCategory ? t('category.create') : t('category.save_changes')}
         </LoadingButton>
       </Grid>
     </>

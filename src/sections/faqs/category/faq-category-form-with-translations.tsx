@@ -21,7 +21,7 @@ import { useRouter } from 'routes/hooks';
 import type { IFAQCategory } from 'types/faq';
 import type { LanguageCode } from 'components/language-selector';
 import type { Translation } from 'components/language-selector/language-selector';
-import type { FileData } from 'types/files';
+import type { FileData, FileDataWithUrl } from 'types/files';
 // api
 import { createFAQCategory, updateFAQCategory } from 'api/faq';
 // components
@@ -51,8 +51,8 @@ export default function FAQCategoryFormWithTranslations({
   );
   const [logo, setLogo] = useState<File | null>(null);
 
-  const [logoData, setLogoData] = useState<FileData | null>(
-    (currentCategory?.logoData as FileData) || null
+  const [logoData, setLogoData] = useState<FileDataWithUrl | null>(
+    currentCategory?.logoData || null
   );
   const [uploading, setUploading] = useState(false);
   const [selectedLang, setSelectedLang] = useState<LanguageCode>('es');
@@ -268,7 +268,7 @@ export default function FAQCategoryFormWithTranslations({
             <Stack spacing={1.5}>
               <Typography variant="subtitle2">{t('category.logo')}</Typography>
               <Upload
-                file={logo ? logo : logoData?.urls?.original || null}
+                file={logo ? logo : logoData?.url || null}
                 maxSize={3145728}
                 onDrop={handleDrop}
                 onDelete={handleRemoveFile}

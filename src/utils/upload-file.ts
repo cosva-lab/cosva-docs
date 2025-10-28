@@ -44,18 +44,6 @@ export async function uploadFileToStorage({
       },
     });
 
-    // Get the public URL for the uploaded file using the new path-based API
-    const { url: originalUrl } = await getUrl({
-      path: fileName,
-      options: {
-        expiresIn: 31536000, // 1 year
-      },
-    });
-
-    // For now, use the same URL for thumbnail
-    // TODO: In production, you might want to generate an actual thumbnail
-    const thumbUrl = originalUrl;
-
     // Return the FileData format (Shrine-like structure)
     return {
       id: fileName,
@@ -64,10 +52,6 @@ export async function uploadFileToStorage({
         filename: file.name,
         mime_type: file.type,
         size: file.size,
-      },
-      urls: {
-        original: originalUrl.toString(),
-        thumb: thumbUrl.toString(),
       },
     };
   } catch (error) {

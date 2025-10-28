@@ -26,11 +26,7 @@ const CategoryCard = ({
   const { getTranslation } = useEntityTranslation<IFAQCategoryI18n>();
   const name = getTranslation(category.translations)?.name || 'Category';
   const logoUrl =
-    typeof category.logoData === 'object' &&
-    category.logoData &&
-    'urls' in category.logoData
-      ? (category.logoData.urls as { original?: string })?.original
-      : undefined;
+    typeof category.logoData === 'object' && category.logoData?.url;
 
   // Mobile-specific styles
   const mobileStyles = isMobile

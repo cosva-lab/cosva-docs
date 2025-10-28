@@ -1,4 +1,5 @@
 import type { Schema } from '../../amplify/data/resource';
+import { FileDataWithUrl } from './files';
 
 // Type aliases for better readability
 type FAQCategorySchema = Schema['FAQCategory']['type'];
@@ -10,8 +11,9 @@ export type StatusEnum = Schema['StatusEnum']['type'];
 
 // ----------------------------------------------------------------------
 
-export type IFAQCategory = FAQCategorySchema & {
+export type IFAQCategory = Omit<FAQCategorySchema, 'logoData'> & {
   translations?: IFAQCategoryI18n[];
+  logoData: FileDataWithUrl | null;
 };
 
 export type IFAQCategoryI18n = FAQCategoryI18nSchema;
@@ -45,4 +47,3 @@ export type IFAQSearchParams = {
   lang?: LanguageCode;
   categoryId?: string;
 };
-

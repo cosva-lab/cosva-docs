@@ -4,7 +4,8 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 // types
 import type { IFAQ, IFAQCategory } from 'types/faq';
-import { FileData } from 'types/files';
+import { FileData, FileDataWithUrl } from 'types/files';
+import { getUrl } from 'aws-amplify/storage';
 
 const client = generateClient<Schema>({
   authMode: 'apiKey',
@@ -50,13 +51,34 @@ export function useGetFAQCategories(
           'faqs.translations.lang',
         ],
       });
-      return result.data;
+
+      const data: IFAQCategory[] = await Promise.all(
+        result.data.map(async (category): Promise<IFAQCategory> => {
+          const logoData: FileDataWithUrl | null = category.logoData
+            ? ({
+                ...category.logoData,
+                url: (
+                  await getUrl({
+                    path: category.logoData.id,
+                  })
+                ).url.toString(),
+              } as FileDataWithUrl)
+            : null;
+          const data = {
+            ...category,
+            logoData,
+          } as unknown as IFAQCategory;
+          return data;
+        })
+      );
+
+      return data;
     }
   );
 
   const memoizedValue = useMemo(
     () => ({
-      categories: (data || []) as unknown as IFAQCategory[] as IFAQCategory[],
+      categories: data || [],
       categoriesLoading: isLoading,
       categoriesError: error,
       categoriesValidating: isValidating,

@@ -15,33 +15,24 @@ import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
 // components
 import Iconify from 'components/iconify';
+import { Schema } from '../../../amplify/data/resource';
 
 // ----------------------------------------------------------------------
 
-export type LanguageCode =
-  | 'en'
-  | 'es'
-  | 'fr'
-  | 'pt'
-  | 'de'
-  | 'it'
-  | 'zh'
-  | 'ja'
-  | 'ko'
-  | 'ar'
-  | 'ru'
-  | 'hi';
+export type LanguageCode = Schema['LanguageCode']['type'];
 
 export type Translation = {
   lang: LanguageCode;
   values: Record<string, string | undefined>;
 };
 
-export const AVAILABLE_LANGUAGES: {
+type Language = {
   code: LanguageCode;
   name: string;
   nativeName: string;
-}[] = [
+};
+
+export const AVAILABLE_LANGUAGES: Language[] = [
   { code: 'en', name: 'English', nativeName: 'English' },
   { code: 'es', name: 'Spanish', nativeName: 'Español' },
   { code: 'fr', name: 'French', nativeName: 'Français' },

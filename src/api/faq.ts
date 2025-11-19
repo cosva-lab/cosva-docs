@@ -76,7 +76,14 @@ export function useGetFAQCategories(
 
       const data: IFAQCategory[] = result.data as unknown as IFAQCategory[];
 
-      return await Promise.all(data.map(injectLogoDataUrl));
+      // Sort categories by order field
+      const sortedData = [...data].sort((a, b) => {
+        const orderA = a.order ?? 999;
+        const orderB = b.order ?? 999;
+        return orderA - orderB;
+      });
+
+      return await Promise.all(sortedData.map(injectLogoDataUrl));
     }
   );
 
@@ -185,7 +192,15 @@ export function useGetFAQs(categoryId?: string) {
           'translations.lang',
         ],
       });
-      return result.data;
+
+      // Sort FAQs by order field
+      const sortedData = [...(result.data || [])].sort((a, b) => {
+        const orderA = a.order ?? 999;
+        const orderB = b.order ?? 999;
+        return orderA - orderB;
+      });
+
+      return sortedData;
     }
   );
 

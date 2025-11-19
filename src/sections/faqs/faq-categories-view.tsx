@@ -89,7 +89,7 @@ export default function FAQCategoriesView() {
       if (category.faqs) {
         const faqsArray = Array.isArray(category.faqs) ? category.faqs : [];
         if (faqsArray.length > 0) {
-          // Sort FAQs by order
+          // Sort FAQs by order field
           const sortedFAQs = [...faqsArray].sort((a, b) => {
             const orderA = a.order ?? 999;
             const orderB = b.order ?? 999;

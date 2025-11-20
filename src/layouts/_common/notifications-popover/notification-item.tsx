@@ -12,6 +12,7 @@ import { fToNow } from 'utils/format-time';
 // components
 import Label from 'components/label';
 import FileThumbnail from 'components/file-thumbnail';
+import HtmlContent from 'components/html-content';
 
 // ----------------------------------------------------------------------
 
@@ -239,15 +240,5 @@ export default function NotificationItem({ notification }: NotificationItemProps
 // ----------------------------------------------------------------------
 
 function reader(data: string) {
-  return (
-    <Box
-      dangerouslySetInnerHTML={{ __html: data }}
-      sx={{
-        mb: 0.5,
-        '& p': { typography: 'body2', m: 0 },
-        '& a': { color: 'inherit', textDecoration: 'none' },
-        '& strong': { typography: 'subtitle2' },
-      }}
-    />
-  );
+  return <HtmlContent html={data} variant="simple" sx={{ mb: 0.5 }} />;
 }

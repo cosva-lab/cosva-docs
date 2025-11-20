@@ -8,6 +8,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 // components
 import Iconify from 'components/iconify';
+import HtmlContent from 'components/html-content';
 import { useLocales } from 'locales';
 // hooks
 import { useEntityTranslation } from 'hooks/use-entity-translation';
@@ -75,7 +76,7 @@ export default function FaqsList({ faqs, selectedCategory, loading }: Props) {
             </AccordionSummary>
 
             <AccordionDetails>
-              <Typography sx={{ whiteSpace: 'pre-wrap' }}>{answer}</Typography>
+              <HtmlContent html={answer} variant="rich" />
             </AccordionDetails>
           </Accordion>
         );

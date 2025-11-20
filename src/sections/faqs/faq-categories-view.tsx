@@ -50,7 +50,9 @@ import {
 import { paths } from 'routes/paths';
 import { RouterLink } from 'routes/components';
 // types
-import { IFAQ, IFAQCategory, StatusEnum } from 'types/faq';
+import { IFAQ, IFAQCategory, IFAQI18n, StatusEnum } from 'types/faq';
+import { useEntityTranslation } from 'hooks/use-entity-translation';
+import HtmlContent from 'components/html-content';
 
 export default function FAQCategoriesView() {
   const settings = useSettingsContext();
@@ -536,6 +538,9 @@ function SortableFAQItem({ faq, t }: SortableFAQItemProps) {
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const { getTranslation } = useEntityTranslation<IFAQI18n>();
+  const translation = getTranslation(faq.translations);
+
   return (
     <Box ref={setNodeRef} style={style} {...attributes}>
       <Card variant="outlined">
@@ -554,10 +559,10 @@ function SortableFAQItem({ faq, t }: SortableFAQItemProps) {
 
           <Stack flexGrow={1} spacing={0.5}>
             <Typography variant="subtitle2">
-              {faq.translations?.[0]?.question || t('faq.no_question')}
+              {translation?.question || t('faq.no_question')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {faq.translations?.[0]?.answer || t('faq.no_answer')}
+              <HtmlContent html={translation?.answer || ''} variant="rich" />
             </Typography>
             {faq.tags && faq.tags.length > 0 && (
               <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1 }}>

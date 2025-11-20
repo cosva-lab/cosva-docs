@@ -28,6 +28,7 @@ import { useGetFAQCategories } from 'api/faq';
 // components
 import { useSnackbar } from 'components/snackbar';
 import { LanguageSelector } from 'components/language-selector';
+import Editor from 'components/editor';
 
 // ----------------------------------------------------------------------
 
@@ -84,14 +85,14 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
     ];
   });
 
-  const currentValues = useMemo(() => {
-    return (
+  const currentValues = useMemo(
+    () =>
       translations.find(t => t.lang === selectedLang)?.values || {
         question: '',
         answer: '',
-      }
-    );
-  }, [translations, selectedLang]);
+      },
+    [translations, selectedLang]
+  );
 
   const updateTranslation = useCallback(
     (lang: LanguageCode, field: string, value: string) => {
@@ -283,16 +284,17 @@ export default function FAQFormWithTranslations({ currentFAQ }: Props) {
               }
             />
 
-            <TextField
-              fullWidth
-              label={t('faq.answer')}
-              multiline
-              rows={6}
-              value={currentValues.answer || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                updateTranslation(selectedLang, 'answer', e.target.value)
-              }
-            />
+            <Stack spacing={1.5}>
+              <Typography variant="subtitle2">{t('faq.answer')}</Typography>
+              <Editor
+                id={`faq-answer-${selectedLang}`}
+                value={currentValues.answer || ''}
+                onChange={(value: string) =>
+                  updateTranslation(selectedLang, 'answer', value)
+                }
+                simple
+              />
+            </Stack>
 
             <Stack spacing={2}>
               <Typography variant="subtitle2">{t('faq.tags')}</Typography>

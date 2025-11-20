@@ -1,8 +1,20 @@
 import { StyledEditorToolbar } from './styles';
+// @mui
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+// components
+import Iconify from 'components/iconify';
 
 // ----------------------------------------------------------------------
 
-const HEADINGS = ['Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6'];
+const HEADINGS = [
+  'Heading 1',
+  'Heading 2',
+  'Heading 3',
+  'Heading 4',
+  'Heading 5',
+  'Heading 6',
+];
 
 export const formats = [
   'align',
@@ -33,12 +45,27 @@ export const formats = [
 type EditorToolbarProps = {
   id: string;
   isSimple?: boolean;
+  isHtmlMode?: boolean;
+  onToggleHtmlMode?: () => void;
 };
 
-export default function Toolbar({ id, isSimple, ...other }: EditorToolbarProps) {
+export default function Toolbar({
+  id,
+  isSimple,
+  isHtmlMode = false,
+  onToggleHtmlMode,
+  ...other
+}: EditorToolbarProps) {
   return (
-    <StyledEditorToolbar {...other}>
-      <div id={id}>
+    <StyledEditorToolbar
+      {...other}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
+      <div id={id} key={id}>
         <div className="ql-formats">
           <select className="ql-header" defaultValue="">
             {HEADINGS.map((heading, index) => (
@@ -67,8 +94,12 @@ export default function Toolbar({ id, isSimple, ...other }: EditorToolbarProps) 
         <div className="ql-formats">
           <button type="button" className="ql-list" value="ordered" />
           <button type="button" className="ql-list" value="bullet" />
-          {!isSimple && <button type="button" className="ql-indent" value="-1" />}
-          {!isSimple && <button type="button" className="ql-indent" value="+1" />}
+          {!isSimple && (
+            <button type="button" className="ql-indent" value="-1" />
+          )}
+          {!isSimple && (
+            <button type="button" className="ql-indent" value="+1" />
+          )}
         </div>
 
         {!isSimple && (
@@ -101,6 +132,33 @@ export default function Toolbar({ id, isSimple, ...other }: EditorToolbarProps) 
           <button type="button" className="ql-clean" />
         </div>
       </div>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          ml: 2,
+        }}
+      >
+        <Button
+          size="small"
+          variant={isHtmlMode ? 'contained' : 'outlined'}
+          onClick={onToggleHtmlMode}
+          startIcon={
+            <Iconify
+              icon={isHtmlMode ? 'mdi:code-tags' : 'mdi:code-tags'}
+              width={18}
+            />
+          }
+          sx={{
+            minWidth: 'auto',
+            px: 1.5,
+            py: 0.5,
+            fontSize: '0.75rem',
+          }}
+        >
+          {isHtmlMode ? 'TXT' : 'HTML'}
+        </Button>
+      </Box>
     </StyledEditorToolbar>
   );
 }

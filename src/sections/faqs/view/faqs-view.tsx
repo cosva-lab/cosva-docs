@@ -14,6 +14,8 @@ import FaqsHero from '../faqs-hero';
 import FaqsList from '../faqs-list';
 import FaqsForm from '../faqs-form';
 import FaqsCategory from '../faqs-category';
+import { useEntityTranslation } from 'hooks/use-entity-translation';
+import { IFAQCategoryI18n } from 'types/faq';
 
 // ----------------------------------------------------------------------
 
@@ -36,7 +38,12 @@ export default function FaqsView() {
   const selectedCategory = categories.find(
     cat => cat.id === selectedCategoryId
   );
-  const categoryName = selectedCategory?.translations?.[0]?.name;
+
+  const { getTranslation } = useEntityTranslation<IFAQCategoryI18n>();
+
+  const translation = getTranslation(selectedCategory?.translations);
+  const categoryName = translation?.name;
+  const categoryDescription = translation?.description;
 
   const handleShowAll = () => {
     setSelectedCategoryId(undefined);
@@ -63,7 +70,7 @@ export default function FaqsView() {
           alignItems={{ xs: 'flex-start', md: 'center' }}
           justifyContent="space-between"
           spacing={2}
-          sx={{ my: { xs: 3, md: 8 } }}
+          sx={{ mt: { xs: 3, md: 8 } }}
         >
           <Typography variant="h3">
             {categoryName || t('pages.frequently_asked')}
@@ -79,7 +86,17 @@ export default function FaqsView() {
             </Button>
           )}
         </Stack>
-
+        {categoryDescription && (
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{
+              marginBottom: 3,
+            }}
+          >
+            {categoryDescription}
+          </Typography>
+        )}
         <Box
           gap={10}
           display="grid"
@@ -93,7 +110,6 @@ export default function FaqsView() {
             selectedCategory={categoryName}
             loading={faqsLoading}
           />
-
           <FaqsForm />
         </Box>
       </Container>
